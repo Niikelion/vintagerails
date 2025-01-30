@@ -11,10 +11,10 @@
       "properties": {
         "speedMultiplier": 1,
         "accelerationbyType": {
-          "*-raised_ns": -1,
-          "*-raised_sn": 1,
-          "*-raised_we": -1,
-          "*-raised_ew": 1,
+          "*-raised_ns": -5,
+          "*-raised_sn": 5,
+          "*-raised_we": -5,
+          "*-raised_ew": 5,
           "*": 0
         }
       }

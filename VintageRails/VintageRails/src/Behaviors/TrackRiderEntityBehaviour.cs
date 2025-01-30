@@ -67,7 +67,7 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
             LastAnchors = anchors;
             // var reverse = i1 == 1 && false;
             CurrentPosOnTrack = i1 == 0 ? 0 : 1;
-            CurrentTrackSpeed *= Math.Sign(dirOnTrack);
+            CurrentTrackSpeed *= Math.Sign(CurrentTrackSpeed) * -(i1 * 2 - 1);
         }
         
         WasOnTrack = true;

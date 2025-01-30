@@ -8,7 +8,7 @@ namespace VintageRails.Behaviors
     public class BlockBehaviorCartTrack : BlockBehavior
     {
         public float SpeedMultiplier { get; private set; }
-        public float Friction { get; private set; } = 0.001f;
+        public float Friction { get; private set; } = 0.1f;
         public float ConstantAcceleration { get; private set; } = 0f;
         
         public BlockFacing StartDir { get; private set; }
