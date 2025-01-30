@@ -40,7 +40,7 @@ public class TrackAnchorData {
         return d1 < d2 ? 0 : 1;
     }
 
-    public int GetFromMovement(float movement) {
+    public int GetFromMovement(double movement) {
         return movement > 0 ? 1 : 0;
     }
     

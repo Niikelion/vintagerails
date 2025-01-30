@@ -15,12 +15,15 @@ public static class RailUtil {
 ;
         if (track == null) {
             var offset = new BlockPos(0, 1, 0);
-            if ((pos.Y % 1.0) < 0.5) {
+            if ((pos.Y % 1.0) < 0.1) {
                 offset *= -1;
+                bp.Add(offset);
+                return (world.GetBlockBehaviour<BlockBehaviorCartTrack>(bp), bp);
             }
-
-            bp.Add(offset);
-            return (world.GetBlockBehaviour<BlockBehaviorCartTrack>(bp), bp);
+            if((pos.Y % 1.0) > 0.8) {
+                bp.Add(offset);
+                return (world.GetBlockBehaviour<BlockBehaviorCartTrack>(bp), bp);
+            }
         }
 
         return (track, bp);
