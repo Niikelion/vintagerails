@@ -1,0 +1,27 @@
+{
+  "code": "cart",
+  "class": "vintagerails.Cart",
+  "hitboxSize": {
+    "x": 1,
+    "y": 1
+  },
+  "drops": [],
+  "client": {
+    "renderer": "Shape",
+    "shape": {
+      "base": "game:block/metal/hopperh"
+    },
+    "textures": {
+      "copper1": { "base": "game:block/metal/sheet/copper1" }
+    },
+    "behaviors": [
+      {
+        "code": "interpolateposition"
+      }
+    ]
+  },
+  "server": {
+    "behaviors": [
+    ]
+  }
+}

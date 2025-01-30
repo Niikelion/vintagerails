@@ -1,0 +1,4 @@
+﻿[*.{cs,vb}]
+
+# IDE0046: Konwertuj na wyrażenie warunkowe
+dotnet_diagnostic.IDE0046.severity = none

@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34221.43
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CakeBuild", "VintageRails\CakeBuild\CakeBuild.csproj", "{8B465A4A-6378-4987-AB54-BE8C506525B3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VintageRails", "VintageRails\VintageRails\VintageRails.csproj", "{914AD7D3-9022-4BD9-A337-2FF63690C0C2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C8140F2A-DB22-4287-B274-19212F9C820B}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8B465A4A-6378-4987-AB54-BE8C506525B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B465A4A-6378-4987-AB54-BE8C506525B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B465A4A-6378-4987-AB54-BE8C506525B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B465A4A-6378-4987-AB54-BE8C506525B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{914AD7D3-9022-4BD9-A337-2FF63690C0C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{914AD7D3-9022-4BD9-A337-2FF63690C0C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{914AD7D3-9022-4BD9-A337-2FF63690C0C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{914AD7D3-9022-4BD9-A337-2FF63690C0C2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9FFCFD2D-5A98-41B1-AD38-52166CE417B3}
+	EndGlobalSection
+EndGlobal

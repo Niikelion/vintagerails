@@ -1,0 +1,23 @@
+{
+  "code": "cart",
+  "class": "ItemCreature",
+  "variantgroups": [
+    {
+      "code": "type",
+      "states": [ "cart" ]
+    }
+  ],
+  "shape": {
+    "base": "game:block/dice"
+  },
+  "textures": {
+    "dice": {
+      "base": "game:block/dice"
+    }
+  },
+  "creativeinventory": {
+    "general": [ "*" ],
+    "items": [ "*" ],
+    "creatures": [ "*" ]
+  }
+}
