@@ -7,10 +7,9 @@ namespace VintageRails.Behaviors
     public class BlockBehaviorCartTrack : BlockBehavior
     {
         public float SpeedMultiplier { get; private set; }
-
-        private BlockFacing startDir;
-        private BlockFacing endDir;
-        private bool raised;
+        public BlockFacing StartDir { get; private set; }
+        public BlockFacing EndDir { get; private set; }
+        public bool Raised { get; private set; }
 
         public BlockBehaviorCartTrack(Block block) : base(block) {}
 
@@ -30,15 +29,15 @@ namespace VintageRails.Behaviors
 
                 if (parts.Length == 2)
                 {
-                    raised = parts[0] == "raised";
-                    startDir = BlockFacing.FromFirstLetter(parts[2]);
-                    endDir = BlockFacing.FromFirstLetter(parts[1]);
+                    Raised = parts[0] == "raised";
+                    StartDir = BlockFacing.FromFirstLetter(parts[2]);
+                    EndDir = BlockFacing.FromFirstLetter(parts[1]);
                 }
             }
 
-            raised = properties["raised"].AsBool(raised);
-            startDir = hasStartDir ? BlockFacing.FromFirstLetter(properties["startDir"].AsString()) : startDir;
-            endDir = hasEndDir ? BlockFacing.FromFirstLetter(properties["endDir"].AsString()) : endDir;
+            Raised = properties["raised"].AsBool(Raised);
+            StartDir = hasStartDir ? BlockFacing.FromFirstLetter(properties["startDir"].AsString()) : StartDir;
+            EndDir = hasEndDir ? BlockFacing.FromFirstLetter(properties["endDir"].AsString()) : EndDir;
         }
     }
 }
