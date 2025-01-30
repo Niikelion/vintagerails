@@ -1,6 +1,7 @@
 using System;
 using VintageRails.Behaviors;
 using Vintagestory.API.MathTools;
+using static System.Math;
 
 namespace VintageRails.Rails;
 
@@ -30,9 +31,17 @@ public class TrackAnchorData {
     private TrackAnchorData() { }
 
     public int ClosestAnchor(Vec3d localPoint) {
-        var d1 = LowerAnchor.SquareDistanceTo(localPoint);
-        var d2 = HigherAnchor.SquareDistanceTo(localPoint);
+        var p = localPoint;
+        // var mask = new Vec3d(-1, 1, -1);
+        var l = LowerAnchor;//.Clone().Mul(-1, 1, -1);
+        var h = HigherAnchor;//.Clone().Mul(-1, 1, -1);
+        var d1 = l.SquareDistanceTo(p);
+        var d2 = h.SquareDistanceTo(p);
         return d1 < d2 ? 0 : 1;
+    }
+
+    public int GetFromMovement(float movement) {
+        return movement > 0 ? 1 : 0;
     }
     
     public static TrackAnchorData OfDirections(BlockFacing first, BlockFacing second, bool raised) {
@@ -45,9 +54,9 @@ public class TrackAnchorData {
         var hai = sorted.highter;
         var lai = sorted.lower;
         var d = hai - lai;
-        var half = new Vec3d(0.5, 0.5, 0.5);
-        var ha = NormalizeMax(new Vec3d(hai.X, hai.Y, hai.Z)) + half;
-        var la = NormalizeMax(new Vec3d(lai.X, lai.Y, lai.Z)) + half;
+        //var half = new Vec3d(0.5, 0.5, 0.5);
+        var ha = NormalizeMax(new Vec3d(hai.X, hai.Y, hai.Z)) / 2;//+ half;
+        var la = NormalizeMax(new Vec3d(lai.X, lai.Y, lai.Z)) / 2;//+ half;
         // var la = new Vec3d(lai.X + aro, lai.Y + aro, lai.Z + aro) / (aro * 2);
         var l = (ha - la).Length();
         return new TrackAnchorData {
@@ -70,7 +79,7 @@ public class TrackAnchorData {
     }
 
     private static Vec3d NormalizeMax(Vec3d vec) {
-        var max = Math.Max(Math.Max(vec.X, vec.Y), vec.Z);
+        var max = Max(Max(Abs(vec.X), Abs(vec.Y)), Abs(vec.Z));
         return vec / max;
     }
     

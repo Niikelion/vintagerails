@@ -14,7 +14,7 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
     private double CurrentPosOnTrack { get; set; } = 0;//TODO save
     private float CurrentTrackSpeed { get; set; } = 0;//TODO save
 
-    private Vec3d LastExitAnchor = new Vec3d(0, 0, 0); 
+    private TrackAnchorData? LastAnchors = null; 
     
     // private Vec2d CurrentTrackDirection { get; set; } = new Vec2d(1, 0);//TODO save
 
@@ -50,6 +50,7 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
             return;
         }
         var anchors = track.GetAnchorData();
+        LastAnchors ??= anchors;
         
         var spdSign = Math.Sign(CurrentTrackSpeed);
 
@@ -57,16 +58,21 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
         
         if (bp != PreviousBp) {
             PreviousBp.Set(bp);
-            var localPos = new Vec3d(bp.X, bp.Y, bp.Z).Sub(entityPos);
-            var i = anchors.ClosestAnchor(localPos);
-            var a = anchors[i];
-            dirOnTrack = a.Dot(LastExitAnchor);
-            LastExitAnchor = anchors[1 - i];
-            CurrentPosOnTrack = dirOnTrack > 0 ? 0 : 1;
+            var localPos = entityPos.Sub(new Vec3d(bp.X + 0.5f, bp.Y + 0.5f, bp.Z + 0.5f));
+            var i1 = anchors.ClosestAnchor(localPos);
+            var a = anchors[i1];
+            var i2 = LastAnchors.GetFromMovement(CurrentTrackSpeed);
+            var b = LastAnchors[i2];
+            dirOnTrack = -a.X * b.X + -a.Z * b.Z;
+            LastAnchors = anchors;
+            // var reverse = i1 == 1 && false;
+            CurrentPosOnTrack = i1 == 0 ? 0 : 1;
+            CurrentTrackSpeed *= Math.Sign(dirOnTrack);
         }
         
         WasOnTrack = true;
 
+        //Stop on 90deg turn
         if (Math.Abs(dirOnTrack) < 1d / 64d) {
             CurrentTrackSpeed = 0;
             return;
@@ -78,16 +84,19 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
 
         WasMovingForward = CurrentTrackSpeed > 0;
 
-        CurrentTrackSpeed += track.ConstantAcceleration * deltaTime - CurrentTrackSpeed * track.Friction * deltaTime;
+
+        var dt = 1f / 60f;
         
-        CurrentPosOnTrack += deltaTime * CurrentTrackSpeed / anchors.DeltaL;
+        CurrentTrackSpeed += track.ConstantAcceleration * dt - CurrentTrackSpeed * track.Friction * dt;
+        
+        CurrentPosOnTrack += dt * CurrentTrackSpeed / anchors.DeltaL;
         
         entity.ServerPos
             .SetPos(
                 new Vec3d(
-                    GameMath.Lerp(la.X, ha.X, CurrentPosOnTrack),
-                    GameMath.Lerp(la.Y, ha.Y, CurrentPosOnTrack),
-                    GameMath.Lerp(la.Z, ha.Z, CurrentPosOnTrack)
+                    GameMath.Lerp(la.X + 0.5, ha.X + 0.5, CurrentPosOnTrack),
+                    GameMath.Lerp(la.Y + 0.5, ha.Y + 0.5, CurrentPosOnTrack),
+                    GameMath.Lerp(la.Z + 0.5, ha.Z + 0.5, CurrentPosOnTrack)
                 ).Add(bp)
             );
     }
