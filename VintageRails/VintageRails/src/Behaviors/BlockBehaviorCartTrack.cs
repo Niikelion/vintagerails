@@ -22,7 +22,7 @@ namespace VintageRails.Behaviors
             bool hasStartDir = properties["startDir"].Exists;
             bool hasEndDir = properties["endDir"].Exists;
 
-            if (!hasStartDir || !hasEndDir && !properties["raised"].Exists)
+            if (!hasStartDir || !hasEndDir || !properties["raised"].Exists)
             {
                 string codePart = block.LastCodePart();
                 string[] parts = codePart.Split("_");
