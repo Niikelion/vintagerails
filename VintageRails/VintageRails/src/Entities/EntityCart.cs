@@ -25,8 +25,8 @@ namespace VintageRails.Entities
         {
             base.OnGameTick(dt);
 
-            if (!Api.Side.IsServer())
-                HandleMovementOnTrack();
+            // if (!Api.Side.IsServer())
+                //HandleMovementOnTrack();
         }
 
         private void HandleMovementOnTrack()

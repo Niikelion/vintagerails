@@ -9,7 +9,14 @@
     {
       "name": "vintagerails.CartTrack",
       "properties": {
-        "speedMultiplier": 1
+        "speedMultiplier": 1,
+        "accelerationbyType": {
+          "*-raised_ns": -1,
+          "*-raised_sn": 1,
+          "*-raised_we": -1,
+          "*-raised_ew": 1,
+          "*": 0
+        }
       }
     },
     {

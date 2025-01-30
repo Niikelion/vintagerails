@@ -1,4 +1,5 @@
-﻿using Vintagestory.API.Common;
+﻿using VintageRails.Rails;
+using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
@@ -7,6 +8,9 @@ namespace VintageRails.Behaviors
     public class BlockBehaviorCartTrack : BlockBehavior
     {
         public float SpeedMultiplier { get; private set; }
+        public float Friction { get; private set; } = 0.001f;
+        public float ConstantAcceleration { get; private set; } = 0f;
+        
         public BlockFacing StartDir { get; private set; }
         public BlockFacing EndDir { get; private set; }
         public bool Raised { get; private set; }
@@ -30,14 +34,20 @@ namespace VintageRails.Behaviors
                 if (parts.Length == 2)
                 {
                     Raised = parts[0] == "raised";
-                    StartDir = BlockFacing.FromFirstLetter(parts[2]);
-                    EndDir = BlockFacing.FromFirstLetter(parts[1]);
+                    StartDir = BlockFacing.FromFirstLetter(parts[1][1]);
+                    EndDir = BlockFacing.FromFirstLetter(parts[1][0]);
                 }
             }
-
             Raised = properties["raised"].AsBool(Raised);
             StartDir = hasStartDir ? BlockFacing.FromFirstLetter(properties["startDir"].AsString()) : StartDir;
             EndDir = hasEndDir ? BlockFacing.FromFirstLetter(properties["endDir"].AsString()) : EndDir;
+            
+            ConstantAcceleration = properties["acceleration"].AsFloat();
         }
+
+        public TrackAnchorData GetAnchorData() {
+            return TrackAnchorData.OfDirections(StartDir, EndDir, Raised);
+        }
+        
     }
 }

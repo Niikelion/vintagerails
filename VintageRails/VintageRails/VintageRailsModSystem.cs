@@ -13,8 +13,10 @@ namespace VintageRails
 
             api.RegisterBlockBehaviorClass(Mod.Info.ModID + ".CartTrack", typeof(BlockBehaviorCartTrack));
             api.RegisterBlockBehaviorClass(Mod.Info.ModID + ".OverridePick", typeof(BlockBehaviorOverridePick));
-
+            
             api.RegisterEntity(Mod.Info.ModID + ".Cart", typeof(EntityCart));
+            
+            api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".TrackRider", typeof(TrackRiderEntityBehaviour));
         }
     }
 }
