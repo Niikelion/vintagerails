@@ -1,6 +1,6 @@
-﻿using VintageRails.src.Behaviors;
-using VintageRails.src.Blocks;
-using VintageRails.src.Entities;
+﻿using VintageRails.Behaviors;
+using VintageRails.Blocks;
+using VintageRails.Entities;
 using Vintagestory.API.Common;
 
 namespace VintageRails

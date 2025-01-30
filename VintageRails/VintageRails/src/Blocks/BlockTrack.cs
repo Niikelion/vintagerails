@@ -1,7 +1,7 @@
 ﻿using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
-namespace VintageRails.src.Blocks
+namespace VintageRails.Blocks
 {
     internal class BlockTrack : Block
     {

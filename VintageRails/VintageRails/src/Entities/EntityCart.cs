@@ -1,10 +1,9 @@
-﻿
-using VintageRails.src.Behaviors;
+﻿using VintageRails.Behaviors;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
 
-namespace VintageRails.src.Entities
+namespace VintageRails.Entities
 {
     internal class EntityCart : Entity
     {

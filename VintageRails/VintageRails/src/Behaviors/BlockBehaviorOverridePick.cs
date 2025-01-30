@@ -1,9 +1,8 @@
 ﻿using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
-using Vintagestory.GameContent;
 
-namespace VintageRails.src.Behaviors
+namespace VintageRails.Behaviors
 {
     public class BlockBehaviorOverridePick : BlockBehavior
     {
