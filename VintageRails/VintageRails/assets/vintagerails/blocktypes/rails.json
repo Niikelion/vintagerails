@@ -15,12 +15,13 @@
           "*-raised_sn": 5,
           "*-raised_we": -5,
           "*-raised_ew": 5,
-          "*": 1
+          "*": 0
         },
         "snapMultbyType": {
           "*-raised_*": 2,
           "*": 1
-        }
+        },
+        "friction": 1
       }
     },
     {

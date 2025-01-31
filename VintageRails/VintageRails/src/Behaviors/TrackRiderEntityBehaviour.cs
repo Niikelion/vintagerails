@@ -3,8 +3,9 @@ using VintageRails.Rails;
 using VintageRails.Util;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
-using Vintagestory.Server;
+using Vintagestory.GameContent;
 
 namespace VintageRails.Behaviors;
 
@@ -18,13 +19,21 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
     private TrackAnchorData? _lastAnchors = null;
 
     private EntityBehaviorPassivePhysics? _physics = null;
-    
+    private EntityPartitioning partitionUtil;
+
     private BlockPos? PreviousBp { get; set; }
-
-
-    public TrackRiderEntityBehaviour(Entity entity) : base(entity) {
-    }
     
+    public TrackRiderEntityBehaviour(Entity entity) : base(entity) {
+        
+    }
+
+    public override void Initialize(EntityProperties properties, JsonObject attributes) {
+        base.Initialize(properties, attributes);
+        
+        partitionUtil = entity.Api.ModLoader.GetModSystem<EntityPartitioning>();
+    }
+
+
     public override string PropertyName() {
         return "vrails_track_rider";
     }
@@ -95,11 +104,14 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
             SpeedOnTrack = 0;
             return;
         }
-
+        
         var la = anchors.LowerAnchor;
         var ha = anchors.HigherAnchor;
         
         SpeedOnTrack += track.ConstantAcceleration * dt - SpeedOnTrack * track.Friction * dt;
+
+        ApplyCollisions();
+        
         
         PosOnTrack += dt * SpeedOnTrack / anchors.DeltaL;
         
@@ -111,8 +123,61 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
                     GameMath.Lerp(la.Z + 0.5, ha.Z + 0.5, PosOnTrack)
                 ).Add(bp)
             );
+        entity.Pos.SetFrom(entity.ServerPos);
     }
-    
+
+    private void ApplyCollisions() {
+        var pos = entity.Pos.XYZ;
+        var radius = Math.Max(
+            Math.Max(
+                entity.SelectionBox.Height,
+                entity.SelectionBox.Width
+                ),
+            entity.SelectionBox.Length) / 2;
+        
+        partitionUtil.WalkEntityPartitions(pos, radius + partitionUtil.LargestTouchDistance + 0.1, HandleEntityCollision);
+    }
+
+    private bool HandleEntityCollision(Entity e) {
+        if (_lastAnchors == null) {
+            //Stop iteration
+            return false;
+        }
+        
+        var box1 = this.entity.SelectionBox;
+        var box2 = e.SelectionBox;
+
+        var dv = (box1.Center - box2.Center) + (entity.SidedPos.XYZ - e.SidedPos.XYZ);
+
+        var dx = Math.Abs(dv.X);
+        var dy = Math.Abs(dv.Y);
+        var dz = Math.Abs(dv.Z);
+        
+        var maxDx = box1.Width + box2.Width;
+        var maxDy = box1.Height + box2.Height;
+        var maxDz = box1.Length + box2.Length;
+        
+        if (dx < maxDx &&
+            dy < maxDy &&
+            dz < maxDz) {
+
+            var maxDist = Math.Min(Math.Min(maxDx, maxDy), maxDz);
+            
+            // var relativePos = entity.Pos.XYZ.RelativeToCenter(entity.SidedPos.AsBlockPos);
+            var l = dv.Length();
+
+            var dot = _lastAnchors.AnchorDeltaNorm.Dot(dv) / l;
+            var l2 = Math.Clamp(l, 0, maxDist) / maxDist;
+            var l3 = 1 - l2;
+
+            var pushFactor = 5.0;
+            
+            SpeedOnTrack += l3 * dot * pushFactor;
+        }
+        
+        return true;
+    }
+
     private void Derail() {
         if (_physics != null) {
              _physics.Ticking = true;

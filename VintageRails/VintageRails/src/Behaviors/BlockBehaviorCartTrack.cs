@@ -8,7 +8,7 @@ namespace VintageRails.Behaviors
     public class BlockBehaviorCartTrack : BlockBehavior
     {
         public float SpeedMultiplier { get; private set; }
-        public float Friction { get; private set; }
+        public float Friction { get; private set; } = 0.1f;
         public float ConstantAcceleration { get; private set; } = 0f;
         public float SnapToleranceMult { get; private set; } = 0f;
         
@@ -45,6 +45,7 @@ namespace VintageRails.Behaviors
             
             ConstantAcceleration = properties["acceleration"].AsFloat();
             SnapToleranceMult = properties["snapMult"].AsFloat();
+            Friction = properties["friction"].AsFloat();
         }
 
         public TrackAnchorData GetAnchorData() {
