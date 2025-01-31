@@ -8,8 +8,9 @@ namespace VintageRails.Behaviors
     public class BlockBehaviorCartTrack : BlockBehavior
     {
         public float SpeedMultiplier { get; private set; }
-        public float Friction { get; private set; } = 0.1f;
+        public float Friction { get; private set; }
         public float ConstantAcceleration { get; private set; } = 0f;
+        public float SnapToleranceMult { get; private set; } = 0f;
         
         public BlockFacing StartDir { get; private set; }
         public BlockFacing EndDir { get; private set; }
@@ -43,6 +44,7 @@ namespace VintageRails.Behaviors
             EndDir = hasEndDir ? BlockFacing.FromFirstLetter(properties["endDir"].AsString()) : EndDir;
             
             ConstantAcceleration = properties["acceleration"].AsFloat();
+            SnapToleranceMult = properties["snapMult"].AsFloat();
         }
 
         public TrackAnchorData GetAnchorData() {

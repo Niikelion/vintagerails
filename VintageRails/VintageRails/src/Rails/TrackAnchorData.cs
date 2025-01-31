@@ -9,9 +9,9 @@ public class TrackAnchorData {
 
     public const int AnchorResolutionOffset = 1;
     public const int AnchorResolution = AnchorResolutionOffset * 2 + 1;
-    public const int BoundZ = 1;
-    public const int BoundY = AnchorResolution;
-    public const int BoundX = BoundY * BoundY;
+    public const int BoundY = 1;
+    public const int BoundZ = AnchorResolution;
+    public const int BoundX = BoundZ * BoundZ;
     
     public Vec3d this[int i] {
         get => i switch {
@@ -23,10 +23,11 @@ public class TrackAnchorData {
     
     public required Vec3d LowerAnchor { get; init; }
     public required Vec3d HigherAnchor { get; init; }
-
-    public required Vec3i Delta { get; init; }
+    public required Vec3d AnchorDelta { get; init; }
+    
+    public required Vec3d AnchorDeltaNorm { get; init; }
+    
     public required double DeltaL { get; init; }
-    public required Vec2d DirDeltaNorm { get; init; }
     
     private TrackAnchorData() { }
 
@@ -53,18 +54,16 @@ public class TrackAnchorData {
         var sorted = SortAnchors(a1, a2);
         var hai = sorted.highter;
         var lai = sorted.lower;
-        var d = hai - lai;
-        //var half = new Vec3d(0.5, 0.5, 0.5);
-        var ha = NormalizeMax(new Vec3d(hai.X, hai.Y, hai.Z)) / 2;//+ half;
-        var la = NormalizeMax(new Vec3d(lai.X, lai.Y, lai.Z)) / 2;//+ half;
-        // var la = new Vec3d(lai.X + aro, lai.Y + aro, lai.Z + aro) / (aro * 2);
-        var l = (ha - la).Length();
+        var ha = NormalizeMax(new Vec3d(hai.X, hai.Y, hai.Z)) / 2;
+        var la = NormalizeMax(new Vec3d(lai.X, lai.Y, lai.Z)) / 2;
+        var d = ha - la;
+        var l = d.Length();
         return new TrackAnchorData {
             LowerAnchor = la,
             HigherAnchor = ha,
-            Delta = d,
+            AnchorDelta = d,
             DeltaL = l,
-            DirDeltaNorm = new Vec2d(d.X, d.Z).Normalize()
+            AnchorDeltaNorm = d / l
         };
     }
 

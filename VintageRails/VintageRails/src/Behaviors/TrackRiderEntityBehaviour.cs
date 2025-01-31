@@ -12,8 +12,8 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
 
     public bool WasOnTrack { get; private set; } = false;
 
-    private double CurrentPosOnTrack { get; set; } = 0;//TODO save
-    private double CurrentTrackSpeed { get; set; } = 0;//TODO save
+    private double PosOnTrack { get; set; } = 0;//TODO save
+    private double SpeedOnTrack { get; set; } = 0;//TODO save
 
     private TrackAnchorData? _lastAnchors = null;
 
@@ -42,14 +42,17 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
         if(entity.World.Side == EnumAppSide.Client) {
             return;
         }
+        var dt = deltaTime;
         
         // this.entity.Alive = false;
+
+        var tolerance = RailUtil.SnapToleranceBase + (WasOnTrack ? Math.Abs(SpeedOnTrack) * dt : entity.SidedPos.Motion.Length());
         
         var entityPos = entity.SidedPos.XYZ;
-        var (track, bp)= entity.World.GetTrackData(entityPos);
+        var (track, anchors, bp) = entity.World.GetTrackData(entityPos, tolerance);
         PreviousBp ??= bp;
 
-        if (track == null) {
+        if (track == null || anchors == null /* Does nothing anchors are not null when track is not null */) {
             if (WasOnTrack) {
                 Derail();
             }
@@ -57,53 +60,55 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
             WasOnTrack = false;
             return;
         }
-        var anchors = track.GetAnchorData();
+        // var anchors = track.GetAnchorData();
         _lastAnchors ??= anchors;
 
+        var wasRerailed = false;
         if (!WasOnTrack) {
-            Rerail(anchors);
+            Rerail(anchors, bp);
+            wasRerailed = true;
         }
         
         WasOnTrack = true;
-        var spdSign = Math.Sign(CurrentTrackSpeed);
+        var spdSign = Math.Sign(SpeedOnTrack);
 
         var dirOnTrack = (spdSign == 0 ? 1d : spdSign);
         
         if (bp != PreviousBp) {
             PreviousBp.Set(bp);
-            var localPos = entityPos.Sub(new Vec3d(bp.X + 0.5f, bp.Y + 0.5f, bp.Z + 0.5f));
-            var i1 = anchors.ClosestAnchor(localPos);
-            var a = anchors[i1];
-            var i2 = _lastAnchors.GetFromMovement(CurrentTrackSpeed);
-            var b = _lastAnchors[i2];
-            dirOnTrack = -a.X * b.X + -a.Z * b.Z;
+            if (!wasRerailed) {
+                var localPos = entityPos.RelativeToCenter(bp);//.Sub(new Vec3d(bp.X + 0.5f, bp.Y + 0.5f, bp.Z + 0.5f));
+                var i1 = anchors.ClosestAnchor(localPos);
+                var a = anchors[i1];
+                var i2 = _lastAnchors.GetFromMovement(SpeedOnTrack);
+                var b = _lastAnchors[i2];
+                dirOnTrack = -a.X * b.X + -a.Z * b.Z;
+                // var reverse = i1 == 1 && false;
+                PosOnTrack = i1 == 0 ? 0 : 1;
+                SpeedOnTrack *= Math.Sign(SpeedOnTrack) * -(i1 * 2 - 1);
+            }
             _lastAnchors = anchors;
-            // var reverse = i1 == 1 && false;
-            CurrentPosOnTrack = i1 == 0 ? 0 : 1;
-            CurrentTrackSpeed *= Math.Sign(CurrentTrackSpeed) * -(i1 * 2 - 1);
         }
 
         //Stop on 90deg turn
         if (Math.Abs(dirOnTrack) < 1d / 64d) {
-            CurrentTrackSpeed = 0;
+            SpeedOnTrack = 0;
             return;
         }
 
         var la = anchors.LowerAnchor;
         var ha = anchors.HigherAnchor;
-
-        var dt = deltaTime;
         
-        CurrentTrackSpeed += track.ConstantAcceleration * dt - CurrentTrackSpeed * track.Friction * dt;
+        SpeedOnTrack += track.ConstantAcceleration * dt - SpeedOnTrack * track.Friction * dt;
         
-        CurrentPosOnTrack += dt * CurrentTrackSpeed / anchors.DeltaL;
+        PosOnTrack += dt * SpeedOnTrack / anchors.DeltaL;
         
         entity.ServerPos
             .SetPos(
                 new Vec3d(
-                    GameMath.Lerp(la.X + 0.5, ha.X + 0.5, CurrentPosOnTrack),
-                    GameMath.Lerp(la.Y + 0.5, ha.Y + 0.5, CurrentPosOnTrack),
-                    GameMath.Lerp(la.Z + 0.5, ha.Z + 0.5, CurrentPosOnTrack)
+                    GameMath.Lerp(la.X + 0.5, ha.X + 0.5, PosOnTrack),
+                    GameMath.Lerp(la.Y + 0.5, ha.Y + 0.5, PosOnTrack),
+                    GameMath.Lerp(la.Z + 0.5, ha.Z + 0.5, PosOnTrack)
                 ).Add(bp)
             );
     }
@@ -112,21 +117,27 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
         if (_physics != null) {
              _physics.Ticking = true;
             if (_lastAnchors != null) {
-                var i = _lastAnchors.GetFromMovement(CurrentTrackSpeed);
-                entity.SidedPos.Motion.Set(_lastAnchors[i] -_lastAnchors[1 - i]).Normalize().Mul(CurrentTrackSpeed * U.PhysicsTickInterval);
+                var i = _lastAnchors.GetFromMovement(SpeedOnTrack);
+                var speed = Math.Abs(SpeedOnTrack);
+                entity.SidedPos.Motion.Set(_lastAnchors[i] - _lastAnchors[1 - i]).Normalize().Mul(speed * U.PhysicsTickInterval);
             }
         }
-        CurrentTrackSpeed = 0;
-        //Add more involved logic?
+        SpeedOnTrack = 0;
+        // Add more involved logic?
     }
     
-    private void Rerail(TrackAnchorData anchors) {
+    private void Rerail(TrackAnchorData anchors, BlockPos railPos) {
         if (_physics != null) {
             _physics.Ticking = false;
             var motion = entity.SidedPos.Motion;
-            var dot = (anchors.LowerAnchor - anchors.HigherAnchor).Dot(motion);
-            CurrentTrackSpeed = dot / U.PhysicsTickInterval;
-            // entity.RemoveBehavior(_physics);
+            var anchorDeltaNorm = anchors.AnchorDeltaNorm;
+            var motionDot = anchorDeltaNorm.Dot(motion);
+            SpeedOnTrack = motionDot / U.PhysicsTickInterval;
+            
+            var localPos = anchors.LowerAnchor.SubCopy(entity.Pos.XYZ.RelativeToCenter(railPos));
+            var positionDot = -localPos.Dot(anchorDeltaNorm) / anchors.DeltaL;
+
+            PosOnTrack = positionDot;
         }
     }
 }
