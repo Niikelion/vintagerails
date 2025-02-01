@@ -41,8 +41,8 @@ public class TrackAnchorData {
         return d1 < d2 ? 0 : 1;
     }
 
-    public int GetFromMovement(double movement) {
-        return movement > 0 ? 1 : 0;
+    public int GetEntryFromMovement(double movement) {
+        return movement > 0 ? 0 : 1;
     }
     
     public static TrackAnchorData OfDirections(BlockFacing first, BlockFacing second, bool raised) {

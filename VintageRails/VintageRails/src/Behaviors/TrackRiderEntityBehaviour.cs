@@ -85,18 +85,54 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
         var dirOnTrack = (spdSign == 0 ? 1d : spdSign);
         
         if (bp != PreviousBp) {
-            PreviousBp.Set(bp);
             if (!wasRerailed) {
-                var localPos = entityPos.RelativeToCenter(bp);//.Sub(new Vec3d(bp.X + 0.5f, bp.Y + 0.5f, bp.Z + 0.5f));
-                var i1 = anchors.ClosestAnchor(localPos);
-                var a = anchors[i1];
-                var i2 = _lastAnchors.GetFromMovement(SpeedOnTrack);
-                var b = _lastAnchors[i2];
+                // var localPos = entityPos.RelativeToCenter(bp);//.Sub(new Vec3d(bp.X + 0.5f, bp.Y + 0.5f, bp.Z + 0.5f));
+                var i1 = _lastAnchors.GetEntryFromMovement(SpeedOnTrack);
+                var b = _lastAnchors[1 - i1];
+                var pbp = PreviousBp;
+                var i2 = anchors.ClosestAnchor(b.AddToCenter(pbp - bp));
+                var a = anchors[i2];
+                
                 dirOnTrack = -a.X * b.X + -a.Z * b.Z;
-                // var reverse = i1 == 1 && false;
-                PosOnTrack = i1 == 0 ? 0 : 1;
-                SpeedOnTrack *= Math.Sign(SpeedOnTrack) * -(i1 * 2 - 1);
+                
+                var i1s = -(i1 * 2 - 1);
+                var i2s = -(i2 * 2 - 1);
+
+                //12
+                //      2.1 => 0.1
+                //      1.1 => 0.1
+                //00 => pos = pos - trunc(abs(pos))
+                //      2.1 => 0.9
+                //      1.1 => 0.9
+                //01 => pos = (1 + trunc(abs(pos))) - pos
+                //     -1.1 => 0.1
+                //     -0.1 => 0.1
+                //10 => pos = -pos - trunc(abs(pos))
+                //     -1.1 => 0.9
+                //     -0.1 => 0.9
+                //11 => pos = (1 + trunc(abs(pos))) + pos
+
+                //this is abs
+                PosOnTrack *= i1s;
+                var tPos = (int) PosOnTrack;
+                if (i2 == 0) {
+                    PosOnTrack -= tPos;
+                }
+                else {
+                    PosOnTrack = (1 + tPos) - PosOnTrack;
+                }
+                // PosOnTrack -= i1 == 0 ? 0 : 1;
+                
+                if (-(i2 * 2 - 1) > 0) {
+                    SpeedOnTrack = SpeedOnTrack;
+                }
+                else {
+                    SpeedOnTrack = SpeedOnTrack;
+                }
+                
+                SpeedOnTrack *= Math.Sign(SpeedOnTrack) * i2s;
             }
+            PreviousBp.Set(bp);
             _lastAnchors = anchors;
         }
 
@@ -155,7 +191,6 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
                 entity.SelectionBox.Width
                 ),
             entity.SelectionBox.Length) / 2;
-        
         partitionUtil.WalkEntityPartitions(pos, radius + partitionUtil.LargestTouchDistance + 0.1, HandleEntityCollision);
     }
 
@@ -186,7 +221,11 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
             
             // var relativePos = entity.Pos.XYZ.RelativeToCenter(entity.SidedPos.AsBlockPos);
             var l = dv.Length();
-
+            // EntityBoatSeat
+            // EntityBehaviorSelectionBoxes
+            // EntitySidedProperties
+            // EntityBehaviorAttachable
+            // EntityRideableSeat
             var dot = _lastAnchors.AnchorDeltaNorm.Dot(dv) / l;
             var l2 = Math.Clamp(l, 0, maxDist) / maxDist;
             var l3 = 1 - l2;
@@ -203,9 +242,9 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
         if (_physics != null) {
              _physics.Ticking = true;
             if (_lastAnchors != null) {
-                var i = _lastAnchors.GetFromMovement(SpeedOnTrack);
+                var i = _lastAnchors.GetEntryFromMovement(SpeedOnTrack);
                 var speed = Math.Abs(SpeedOnTrack);
-                entity.SidedPos.Motion.Set(_lastAnchors[i] - _lastAnchors[1 - i]).Normalize().Mul(speed * U.PhysicsTickInterval);
+                entity.SidedPos.Motion.Set(_lastAnchors[1] - _lastAnchors[0]).Normalize().Mul(SpeedOnTrack * U.PhysicsTickInterval);
             }
         }
         SpeedOnTrack = 0;

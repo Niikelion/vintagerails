@@ -11,4 +11,8 @@ public static class U {
         return v.SubCopy(bp.X + 0.5, bp.Y + 0.5, bp.Z + 0.5);
     }
     
+    public static Vec3d AddToCenter(this Vec3d v, BlockPos bp) {
+        return v.AddCopy(bp.X + 0.5, bp.Y + 0.5, bp.Z + 0.5);
+    }
+    
 }
