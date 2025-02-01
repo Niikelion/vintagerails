@@ -46,12 +46,13 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
         _physics = entity.GetBehavior<EntityBehaviorPassivePhysics>();
     }
 
-    //TODO move to physics
+    //TODO move to physics update
     public override void OnGameTick(float deltaTime) {
         if(entity.World.Side == EnumAppSide.Client) {
             return;
         }
-        var dt = deltaTime;
+
+        var dt = 1f / 30f;//deltaTime;
         
         // this.entity.Alive = false;
 
@@ -112,10 +113,29 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
 
         ApplyCollisions();
         
-        
         PosOnTrack += dt * SpeedOnTrack / anchors.DeltaL;
+
+        
+        var s = Math.Sign(SpeedOnTrack);
+        var adn2 = /*TrackAnchorData.OfDirections(BlockFacing.WEST, BlockFacing.NORTH, false).AnchorDeltaNorm;*/anchors.AnchorDeltaNorm.Clone();//.Mul(s, 1, s);
+
+        var y = -(float)(Math.Atan2(adn2.Z * s, adn2.X * s));// - Math.PI / 2.0);
+        var p = (float)(Math.Acos(adn2.Dot(new Vec3d(0, 1, 0))) - Math.PI / 2.0) * s;
+        var r = 0f;//-(float)Math.Asin(adn2.Y);// - Math.PI / 2.0);
+        
+        // var quat = Quaterniond.Create();
+        // var quat2 = Quaterniond.Create();
+        
+        // Quaterniond.RotateZ(quat2, quat2, p);
+        // Quaterniond.RotateY(quat, quat, y);
+        // var random = Math.PI;//Random.Shared.NextSingle() * Math.PI * 2;
+        // Quaterniond.RotateY(quat, quat, random);
+        
+        // EntityBehaviorInterpolatePosition
+        // var euler = Quaterniond.ToEulerAngles(quat);
         
         entity.ServerPos
+            .SetAngles(r, y, p)
             .SetPos(
                 new Vec3d(
                     GameMath.Lerp(la.X + 0.5, ha.X + 0.5, PosOnTrack),
@@ -123,6 +143,7 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
                     GameMath.Lerp(la.Z + 0.5, ha.Z + 0.5, PosOnTrack)
                 ).Add(bp)
             );
+        
         entity.Pos.SetFrom(entity.ServerPos);
     }
 

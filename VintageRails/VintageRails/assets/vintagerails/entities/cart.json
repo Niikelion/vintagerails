@@ -1,33 +1,58 @@
 {
   "code": "cart",
-  "class": "vintagerails.Cart",
+  "class": "vintagerails.SeatSup",
   "hitboxSize": {
     "x": 1,
     "y": 1
   },
   "drops": [],
-  "client": {
-    "renderer": "Shape",
-    "shape": {
-      "base": "game:block/metal/hopperh"
+  "behaviorConfigs": {
+    "rideableaccessories": {
+        "wearableSlots": [
+        {
+          "code": "Seat",
+          "forCategoryCodes": ["basket"],
+          "attachmentPointCode": "SeatAP",
+          "emptyInteractPassThrough": true,
+          "stepParentTo": {
+            "": { "elementName": "Seat" }
+          }
+        }
+      ]
     },
-    "textures": {
-      "copper1": { "base": "game:block/metal/sheet/copper1" }
+    "creaturecarrier": {
+      "seats": [
+        {
+          "apName": "SeatAP",
+          "controllable": false
+        }
+      ]
+    },
+    "selectionboxes" : {
+      "selectionboxes": [
+        "SeatAP"
+      ]
+    }
+  },
+  "client": {
+    "renderer": "vintagerails.ShapeFixedRot",
+    "shape": {
+      "base": "vintagerails:entity/carts/minecart"
     },
     "behaviors": [
-      {
-        "code": "interpolateposition"
-      }
+      { "code": "interpolateposition" },
+      { "code": "selectionboxes" },
+      { "code": "rideableaccessories" },
+      { "code": "creaturecarrier" }
     ]
   },
   "server": {
     "behaviors": [
-      {
-        "code": "vintagerails.TrackRider"
-      },
-      {
-        "code": "passivephysics"
-      }
+      { "code": "vintagerails.TrackRider" },
+      { "code": "passivephysics" },
+      { "code": "selectionboxes" },
+      { "code": "rideableaccessories" },
+      { "code": "creaturecarrier" }
     ]
   }
 }
