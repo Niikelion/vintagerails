@@ -90,7 +90,7 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
                 var i1 = _lastAnchors.GetEntryFromMovement(SpeedOnTrack);
                 var b = _lastAnchors[1 - i1];
                 var pbp = PreviousBp;
-                var i2 = anchors.ClosestAnchor(b.AddToCenter(pbp - bp));
+                var i2 = anchors.ClosestAnchor(b.AddCopy(pbp - bp));
                 var a = anchors[i2];
                 
                 dirOnTrack = -a.X * b.X + -a.Z * b.Z;
