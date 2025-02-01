@@ -12,15 +12,19 @@ namespace VintageRails.Behaviors;
 public class TrackRiderEntityBehaviour : EntityBehavior {
 
     public bool WasOnTrack { get; private set; } = false;
-
+    /// <summary>
+    /// Only 1 or -1
+    /// </summary>
+    public int Facing { get; private set; } = 1;
+    
     private double PosOnTrack { get; set; } = 0;//TODO save
     private double SpeedOnTrack { get; set; } = 0;//TODO save
 
     private TrackAnchorData? _lastAnchors = null;
 
     private EntityBehaviorPassivePhysics? _physics = null;
-    private EntityPartitioning partitionUtil;
-
+    private EntityPartitioning _partitionUtil;
+    
     private BlockPos? PreviousBp { get; set; }
     
     public TrackRiderEntityBehaviour(Entity entity) : base(entity) {
@@ -30,10 +34,9 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
     public override void Initialize(EntityProperties properties, JsonObject attributes) {
         base.Initialize(properties, attributes);
         
-        partitionUtil = entity.Api.ModLoader.GetModSystem<EntityPartitioning>();
+        _partitionUtil = entity.Api.ModLoader.GetModSystem<EntityPartitioning>();
     }
-
-
+    
     public override string PropertyName() {
         return "vrails_track_rider";
     }
@@ -121,16 +124,9 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
                 else {
                     PosOnTrack = (1 + tPos) - PosOnTrack;
                 }
-                // PosOnTrack -= i1 == 0 ? 0 : 1;
-                
-                if (-(i2 * 2 - 1) > 0) {
-                    SpeedOnTrack = SpeedOnTrack;
-                }
-                else {
-                    SpeedOnTrack = SpeedOnTrack;
-                }
                 
                 SpeedOnTrack *= Math.Sign(SpeedOnTrack) * i2s;
+                Facing *= i1 == i2 ? 1 : -1;
             }
             PreviousBp.Set(bp);
             _lastAnchors = anchors;
@@ -151,24 +147,13 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
         
         PosOnTrack += dt * SpeedOnTrack / anchors.DeltaL;
 
-        
-        var s = Math.Sign(SpeedOnTrack);
-        var adn2 = /*TrackAnchorData.OfDirections(BlockFacing.WEST, BlockFacing.NORTH, false).AnchorDeltaNorm;*/anchors.AnchorDeltaNorm.Clone();//.Mul(s, 1, s);
 
-        var y = -(float)(Math.Atan2(adn2.Z * s, adn2.X * s));// - Math.PI / 2.0);
+        var s = Facing;//Math.Sign(SpeedOnTrack);
+        var adn2 = anchors.AnchorDeltaNorm.Clone();
+
+        var y = -(float)(Math.Atan2(adn2.Z * s, adn2.X * s));
         var p = (float)(Math.Acos(adn2.Dot(new Vec3d(0, 1, 0))) - Math.PI / 2.0) * s;
-        var r = 0f;//-(float)Math.Asin(adn2.Y);// - Math.PI / 2.0);
-        
-        // var quat = Quaterniond.Create();
-        // var quat2 = Quaterniond.Create();
-        
-        // Quaterniond.RotateZ(quat2, quat2, p);
-        // Quaterniond.RotateY(quat, quat, y);
-        // var random = Math.PI;//Random.Shared.NextSingle() * Math.PI * 2;
-        // Quaterniond.RotateY(quat, quat, random);
-        
-        // EntityBehaviorInterpolatePosition
-        // var euler = Quaterniond.ToEulerAngles(quat);
+        var r = 0f;
         
         entity.ServerPos
             .SetAngles(r, y, p)
@@ -191,7 +176,7 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
                 entity.SelectionBox.Width
                 ),
             entity.SelectionBox.Length) / 2;
-        partitionUtil.WalkEntityPartitions(pos, radius + partitionUtil.LargestTouchDistance + 0.1, HandleEntityCollision);
+        _partitionUtil.WalkEntityPartitions(pos, radius + _partitionUtil.LargestTouchDistance + 0.1, HandleEntityCollision);
     }
 
     private bool HandleEntityCollision(Entity e) {
