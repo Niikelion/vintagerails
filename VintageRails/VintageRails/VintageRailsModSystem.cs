@@ -1,4 +1,5 @@
-﻿using VintageRails.Behaviors;
+﻿using HarmonyLib;
+using VintageRails.Behaviors;
 using VintageRails.Blocks;
 using VintageRails.Entities;
 using VintageRails.Renderer;
@@ -20,6 +21,8 @@ namespace VintageRails
             api.RegisterEntity(Mod.Info.ModID + ".SeatSup", typeof(EntitySeatInstSupplier));
             
             api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".TrackRider", typeof(TrackRiderEntityBehaviour));
+
+            new Harmony(Mod.Info.ModID).PatchAll();
         }
 
         public override void StartClientSide(ICoreClientAPI api) {

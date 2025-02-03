@@ -14,7 +14,7 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
 
     public const string RootAttribute = "vrails.trackRider";
     public const string PosOnTrackAttribute = "posOnTrack";
-    public const string SpeedAttribute = "speed";
+    public const string SpeedAttribute = "vrails.trackspeed";
     public const string WasOnTrackAttribute = "wasOnTrack";
     public const string FacingAttribute = "facing";
     public const string PreviousTrackPosAttribute = "previousTrackPos";
@@ -45,9 +45,9 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
         } 
     }
     private double Speed {
-        get => PersistentData.GetDouble(SpeedAttribute, 0);
+        get => entity.WatchedAttributes.GetDouble(SpeedAttribute, 0);
         set {
-            PersistentData.SetDouble(SpeedAttribute, value);
+            entity.WatchedAttributes.SetDouble(SpeedAttribute, value);
             MarkDirty();
         } 
     }
@@ -55,8 +55,9 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
     private TrackAnchorData? _lastAnchors = null;
 
     private EntityBehaviorPassivePhysics? _physics = null;
+    private EntityBehaviorRepulseAgents? _repulseAgents = null;
     private EntityPartitioning _partitionUtil;
-    
+
     private BlockPos? PreviousBp {
         get => PersistentData.GetBlockPos(PreviousTrackPosAttribute, null);
         set {
@@ -70,35 +71,57 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
         } 
     }
 
+    private string _movingAnimation = "moving";
+
+    private AnimationMetaData _animMeta = new AnimationMetaData();
+    
     [NotNull] private ITreeAttribute? PersistentData { get; set; }
 
     public TrackRiderEntityBehaviour(Entity entity) : base(entity) {
         
     }
-
+    
+    
+    
     public override void Initialize(EntityProperties properties, JsonObject attributes) {
         base.Initialize(properties, attributes);
         
-        _partitionUtil = entity.Api.ModLoader.GetModSystem<EntityPartitioning>();
+        _animMeta.Animation = attributes["movingAnimation"].AsString(_movingAnimation);
+        _animMeta.Code = _animMeta.Animation;
+        _animMeta.AnimationSpeed = 1;
+        _animMeta = _animMeta.Init();
         
+        _partitionUtil = entity.Api.ModLoader.GetModSystem<EntityPartitioning>();
         PersistentData = entity.Attributes.GetOrAddTreeAttribute(RootAttribute);
     }
-    
+
+    public override void AfterInitialized(bool onFirstSpawn) {
+        base.AfterInitialized(onFirstSpawn);
+
+        if (entity.World.Side == EnumAppSide.Client) {
+            entity.AnimManager.StartAnimation(_animMeta);
+        }
+        
+        _physics = entity.GetBehavior<EntityBehaviorPassivePhysics>();
+        _repulseAgents = entity.GetBehavior<EntityBehaviorRepulseAgents>();
+    }
+
     public override string PropertyName() {
         return "vrails_track_rider";
     }
 
-    public override void OnEntitySpawn() {
-        _physics = entity.GetBehavior<EntityBehaviorPassivePhysics>();
-    }
-
-    public override void OnEntityLoaded() {
-        _physics = entity.GetBehavior<EntityBehaviorPassivePhysics>();
-    }
+    // public override void OnEntitySpawn() {
+    //     _physics = entity.GetBehavior<EntityBehaviorPassivePhysics>();
+    // }
+    //
+    // public override void OnEntityLoaded() {
+    // }
+    
     
     //TODO move to physics update
     public override void OnGameTick(float deltaTime) {
         if(entity.World.Side == EnumAppSide.Client) {
+            _animMeta.AnimationSpeed = (float)entity.WatchedAttributes.GetDouble(SpeedAttribute);
             return;
         }
 
@@ -133,7 +156,7 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
         
         var wasRerailed = false;
         if (!WasOnTrack) {
-            Rerail(anchors, bp, ref posOnTrack);
+            Rerail(anchors, bp, ref speed, ref posOnTrack);
             wasRerailed = true;
         }
         
@@ -197,7 +220,7 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
         
         speed += track.ConstantAcceleration * dt - speed * track.Friction * dt;
 
-        ApplyCollisions(ref speed);
+        ApplyCollisionsAndPushing(ref speed);
         
         posOnTrack += dt * speed / anchors.DeltaL;
 
@@ -208,9 +231,9 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
         var s = Facing;
         var adn2 = anchors.AnchorDeltaNorm.Clone();
 
-        var y = -(float)(Math.Atan2(adn2.Z * s, adn2.X * s));
-        var p = (float)(Math.Acos(adn2.Dot(new Vec3d(0, 1, 0))) - Math.PI / 2.0) * s;
-        var r = 0f;
+        var y = -(float)(Math.Atan2(adn2.Z * s, adn2.X * s) - Math.PI / 2.0);
+        var p = 0f;
+        var r = (float)(Math.Acos(adn2.Dot(new Vec3d(0, 1, 0))) - Math.PI / 2.0) * s;
         
         entity.ServerPos
             .SetAngles(r, y, p)
@@ -224,8 +247,10 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
         
         entity.Pos.SetFrom(entity.ServerPos);
     }
-
-    private void ApplyCollisions(ref double speed) {
+    
+    
+    
+    private void ApplyCollisionsAndPushing(ref double speed) {
         var pos = entity.Pos.XYZ;
         var radius = Math.Max(
             Math.Max(
@@ -273,6 +298,8 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
             // EntitySidedProperties
             // EntityBehaviorAttachable
             // EntityRideableSeat
+            // EntityBehaviorCreatureCarrier
+            // EntityBehaviorSeatable
             var dot = _lastAnchors.AnchorDeltaNorm.Dot(dv) / l;
             var l2 = Math.Clamp(l, 0, maxDist) / maxDist;
             var l3 = 1 - l2;
@@ -300,13 +327,13 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
         // Add more involved logic?
     }
     
-    private void Rerail(TrackAnchorData anchors, BlockPos railPos, ref double posOnTrack) {
+    private void Rerail(TrackAnchorData anchors, BlockPos railPos, ref double speed, ref double posOnTrack) {
         if (_physics != null) {
             _physics.Ticking = false;
             var motion = entity.SidedPos.Motion;
             var anchorDeltaNorm = anchors.AnchorDeltaNorm;
             var motionDot = anchorDeltaNorm.Dot(motion);
-            Speed = motionDot / U.PhysicsTickInterval;
+            speed = motionDot / U.PhysicsTickInterval;
             
             var localPos = anchors.LowerAnchor.SubCopy(entity.Pos.XYZ.RelativeToCenter(railPos));
             var positionDot = -localPos.Dot(anchorDeltaNorm) / anchors.DeltaL;

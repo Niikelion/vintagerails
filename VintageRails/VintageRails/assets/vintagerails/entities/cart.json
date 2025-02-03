@@ -3,7 +3,8 @@
   "class": "vintagerails.SeatSup",
   "hitboxSize": {
     "x": 1,
-    "y": 1
+    "y": 1,
+    "z": 1
   },
   "drops": [],
   "behaviorConfigs": {
@@ -11,7 +12,7 @@
         "wearableSlots": [
         {
           "code": "Seat",
-          "forCategoryCodes": ["basket"],
+          "forCategoryCodes": ["basket", "seat", "chest", "crate"],
           "attachmentPointCode": "SeatAP",
           "emptyInteractPassThrough": true,
           "stepParentTo": {
@@ -21,12 +22,7 @@
       ]
     },
     "creaturecarrier": {
-      "seats": [
-        {
-          "apName": "SeatAP",
-          "controllable": false
-        }
-      ]
+      "seats": []
     },
     "selectionboxes" : {
       "selectionboxes": [
@@ -40,6 +36,8 @@
       "base": "vintagerails:entity/carts/minecart"
     },
     "behaviors": [
+      { "code": "vintagerails.TrackRider" },
+      { "code": "repulseagents", "movable": true },
       { "code": "interpolateposition" },
       { "code": "selectionboxes" },
       { "code": "rideableaccessories" },
@@ -49,6 +47,7 @@
   "server": {
     "behaviors": [
       { "code": "vintagerails.TrackRider" },
+      { "code": "repulseagents", "movable": true },
       { "code": "passivephysics" },
       { "code": "selectionboxes" },
       { "code": "rideableaccessories" },

@@ -1,5 +1,6 @@
 {
 	"editor": {
+		"collapsedPaths": "Root/BackAxle2",
 		"allAngles": false,
 		"entityTextureMode": false
 	},
@@ -28,15 +29,10 @@
 				{
 					"name": "Seat",
 					"from": [ 0.0, 5.0, 0.0 ],
-					"to": [ 16.0, 5.0, 16.0 ],
+					"to": [ 16.0, 6.0, 16.0 ],
+					"shade": false,
 					"rotationOrigin": [ 0.0, 5.0, 0.0 ],
 					"faces": {
-						"north": { "texture": "#iron1", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
-						"east": { "texture": "#iron1", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
-						"south": { "texture": "#iron1", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
-						"west": { "texture": "#iron1", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
-						"up": { "texture": "#iron1", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
-						"down": { "texture": "#iron1", "uv": [ 0.0, 0.0, 0.5, 0.5 ] }
 					}
 				}
 			],
@@ -50,93 +46,109 @@
 		},
 		{
 			"name": "BackAxle",
-			"from": [ 0.0, 2.0, 13.0 ],
-			"to": [ 16.0, 4.0, 15.0 ],
-			"rotationOrigin": [ 8.0, 3.0, 14.0 ],
+			"from": [ 13.0, 2.0, 0.0 ],
+			"to": [ 15.0, 4.0, 16.0 ],
+			"rotationOrigin": [ 14.0, 3.0, 8.0 ],
 			"faces": {
 				"north": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 1.0 ], "autoUv": false },
-				"east": { "texture": "#iron1", "uv": [ 0.0, 0.0, 2.0, 2.0 ] },
-				"south": { "texture": "#iron1", "uv": [ 0.0, 0.0, 16.0, 2.0 ] },
-				"west": { "texture": "#iron1", "uv": [ 0.0, 0.0, 2.0, 2.0 ] },
-				"up": { "texture": "#iron1", "uv": [ 0.0, 0.0, 16.0, 2.0 ] },
-				"down": { "texture": "#iron1", "uv": [ 0.0, 0.0, 16.0, 2.0 ] }
+				"east": { "texture": "#iron1", "uv": [ 0.0, 0.0, 16.0, 2.0 ] },
+				"south": { "texture": "#iron1", "uv": [ 0.0, 0.0, 2.0, 2.0 ] },
+				"west": { "texture": "#iron1", "uv": [ 0.0, 0.0, 16.0, 2.0 ] },
+				"up": { "texture": "#iron1", "uv": [ 0.0, 0.0, 2.0, 16.0 ] },
+				"down": { "texture": "#iron1", "uv": [ 0.0, 0.0, 2.0, 16.0 ] }
 			},
 			"children": [
 				{
 					"name": "Wheel1",
 					"from": [ -1.0, -1.0, -1.0 ],
-					"to": [ 0.0, 3.0, 3.0 ],
-					"rotationOrigin": [ -1.0, 1.0, 1.0 ],
-					"rotationX": 45.0,
+					"to": [ 3.0, 3.0, 0.0 ],
+					"rotationOrigin": [ 1.0, 1.0, 0.0 ],
+					"rotationZ": 45.0,
 					"faces": {
-						"north": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
-						"east": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 4.0 ] },
-						"south": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
-						"west": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 4.0 ] },
-						"up": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
-						"down": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] }
+						"north": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 4.0 ] },
+						"east": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
+						"south": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 4.0 ] },
+						"west": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
+						"up": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 1.0 ] },
+						"down": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 1.0 ] }
 					}
 				},
 				{
 					"name": "Wheel2",
-					"from": [ 16.0, -1.0, -1.0 ],
-					"to": [ 17.0, 3.0, 3.0 ],
-					"rotationOrigin": [ 16.0, 1.0, 1.0 ],
-					"rotationX": 45.0,
+					"from": [ -1.0, -1.0, 16.0 ],
+					"to": [ 3.0, 3.0, 17.0 ],
+					"rotationOrigin": [ 1.0, 1.0, 16.0 ],
+					"rotationZ": 45.0,
 					"faces": {
-						"north": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
-						"east": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 4.0 ] },
-						"south": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
-						"west": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 4.0 ] },
-						"up": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
-						"down": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] }
+						"north": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 4.0 ] },
+						"east": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
+						"south": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 4.0 ] },
+						"west": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
+						"up": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 1.0 ] },
+						"down": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 1.0 ] }
 					}
 				}
 			]
 		},
 		{
 			"name": "FrontAxle",
-			"from": [ 0.0, 2.0, 1.0 ],
-			"to": [ 16.0, 4.0, 3.0 ],
-			"rotationOrigin": [ 8.0, 3.0, 2.0 ],
+			"from": [ 1.0, 2.0, 0.0 ],
+			"to": [ 3.0, 4.0, 16.0 ],
+			"rotationOrigin": [ 2.0, 3.0, 8.0 ],
 			"faces": {
 				"north": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 1.0 ], "autoUv": false },
-				"east": { "texture": "#iron1", "uv": [ 0.0, 0.0, 2.0, 2.0 ] },
-				"south": { "texture": "#iron1", "uv": [ 0.0, 0.0, 16.0, 2.0 ] },
-				"west": { "texture": "#iron1", "uv": [ 0.0, 0.0, 2.0, 2.0 ] },
-				"up": { "texture": "#iron1", "uv": [ 0.0, 0.0, 16.0, 2.0 ] },
-				"down": { "texture": "#iron1", "uv": [ 0.0, 0.0, 16.0, 2.0 ] }
+				"east": { "texture": "#iron1", "uv": [ 0.0, 0.0, 16.0, 2.0 ] },
+				"south": { "texture": "#iron1", "uv": [ 0.0, 0.0, 2.0, 2.0 ] },
+				"west": { "texture": "#iron1", "uv": [ 0.0, 0.0, 16.0, 2.0 ] },
+				"up": { "texture": "#iron1", "uv": [ 0.0, 0.0, 2.0, 16.0 ] },
+				"down": { "texture": "#iron1", "uv": [ 0.0, 0.0, 2.0, 16.0 ] }
 			},
 			"children": [
 				{
 					"name": "Wheel3",
 					"from": [ -1.0, -1.0, -1.0 ],
-					"to": [ 0.0, 3.0, 3.0 ],
-					"rotationOrigin": [ -1.0, 1.0, 1.0 ],
-					"rotationX": 45.0,
+					"to": [ 3.0, 3.0, 0.0 ],
+					"rotationOrigin": [ 1.0, 1.0, 0.0 ],
+					"rotationZ": 45.0,
 					"faces": {
-						"north": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
-						"east": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 4.0 ] },
-						"south": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
-						"west": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 4.0 ] },
-						"up": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
-						"down": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] }
+						"north": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 4.0 ] },
+						"east": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
+						"south": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 4.0 ] },
+						"west": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
+						"up": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 1.0 ] },
+						"down": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 1.0 ] }
 					}
 				},
 				{
 					"name": "Wheel4",
-					"from": [ 16.0, -1.0, -1.0 ],
-					"to": [ 17.0, 3.0, 3.0 ],
-					"rotationOrigin": [ 16.0, 1.0, 1.0 ],
-					"rotationX": 45.0,
+					"from": [ -1.0, -1.0, 16.0 ],
+					"to": [ 3.0, 3.0, 17.0 ],
+					"rotationOrigin": [ 1.0, 1.0, 16.0 ],
+					"rotationZ": 45.0,
 					"faces": {
-						"north": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
-						"east": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 4.0 ] },
-						"south": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
-						"west": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 4.0 ] },
-						"up": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
-						"down": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] }
+						"north": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 4.0 ] },
+						"east": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
+						"south": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 4.0 ] },
+						"west": { "texture": "#iron1", "uv": [ 0.0, 0.0, 1.0, 4.0 ] },
+						"up": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 1.0 ] },
+						"down": { "texture": "#iron1", "uv": [ 0.0, 0.0, 4.0, 1.0 ] }
 					}
+				}
+			]
+		},
+		{
+			"name": "DummySeat",
+			"from": [ 8.0, 5.0, 8.0 ],
+			"to": [ 8.0, 5.0, 8.0 ],
+			"shade": false,
+			"rotationOrigin": [ 8.0, 5.0, 8.0 ],
+			"faces": {
+			},
+			"attachmentpoints": [
+				{
+					"code": "DummySeat",
+					"posX": "0.0","posY": "0.0","posZ": "7.0",
+					"rotationX": "180.0","rotationY": "0.0","rotationZ": "0.0"
 				}
 			]
 		}
@@ -152,15 +164,15 @@
 				{
 					"frame": 0,
 					"elements": {
-						"FrontAxle": { "rotationX": 0.0, "rotationY": 0.0, "rotationZ": 0.0 },
-						"BackAxle": { "rotationX": 0.0, "rotationY": 0.0, "rotationZ": 0.0 }
+						"BackAxle": { "rotationX": 0.0, "rotationY": 0.0, "rotationZ": 0.0 },
+						"FrontAxle": { "rotationX": 0.0, "rotationY": 0.0, "rotationZ": 0.0 }
 					}
 				},
 				{
 					"frame": 59,
 					"elements": {
-						"FrontAxle": { "rotationX": 360.0, "rotationY": 0.0, "rotationZ": 0.0 },
-						"BackAxle": { "rotationX": 360.0, "rotationY": 0.0, "rotationZ": 0.0 }
+						"BackAxle": { "rotationX": 0.0, "rotationY": 0.0, "rotationZ": 360.0 },
+						"FrontAxle": { "rotationX": 0.0, "rotationY": 0.0, "rotationZ": 360.0 }
 					}
 				}
 			]
