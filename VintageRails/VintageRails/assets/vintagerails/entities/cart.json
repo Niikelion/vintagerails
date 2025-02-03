@@ -51,7 +51,8 @@
       { "code": "passivephysics" },
       { "code": "selectionboxes" },
       { "code": "rideableaccessories" },
-      { "code": "creaturecarrier" }
+      { "code": "creaturecarrier" },
+      { "code": "vintagerails.OrderedPhysics" }
     ]
   }
 }

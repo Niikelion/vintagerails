@@ -1,23 +1,29 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using VintageRails.Rails;
 using VintageRails.Util;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Server;
+using Vintagestory.API.Util;
 using Vintagestory.GameContent;
 
 namespace VintageRails.Behaviors;
 
-public class TrackRiderEntityBehaviour : EntityBehavior {
+public class TrackRiderEntityBehaviour : EntityBehavior, IOrderedPhysicsTickBehavior {
 
     public const string RootAttribute = "vrails.trackRider";
     public const string PosOnTrackAttribute = "posOnTrack";
     public const string SpeedAttribute = "vrails.trackspeed";
+    public const string SpeedAttribute = "vrails.speed";
     public const string WasOnTrackAttribute = "wasOnTrack";
     public const string FacingAttribute = "facing";
     public const string PreviousTrackPosAttribute = "previousTrackPos";
+
+    private const double Mass = 1.0;
     
     public bool WasOnTrack {
         get => PersistentData.GetBool(WasOnTrackAttribute, false);
@@ -26,6 +32,7 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
             MarkDirty();
         } 
     }
+    
     /// <summary>
     /// Only 1 or -1
     /// </summary>
@@ -34,7 +41,7 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
         private set {
             PersistentData.SetInt(FacingAttribute, value);
             MarkDirty();
-        } 
+        }
     }
     
     private double PosOnTrack {
@@ -44,6 +51,7 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
             MarkDirty();
         } 
     }
+    
     private double Speed {
         get => entity.WatchedAttributes.GetDouble(SpeedAttribute, 0);
         set {
@@ -51,13 +59,12 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
             MarkDirty();
         } 
     }
-
+    
     private TrackAnchorData? _lastAnchors = null;
 
     private EntityBehaviorPassivePhysics? _physics = null;
-    private EntityBehaviorRepulseAgents? _repulseAgents = null;
     private EntityPartitioning _partitionUtil;
-
+    
     private BlockPos? PreviousBp {
         get => PersistentData.GetBlockPos(PreviousTrackPosAttribute, null);
         set {
@@ -81,8 +88,6 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
         
     }
     
-    
-    
     public override void Initialize(EntityProperties properties, JsonObject attributes) {
         base.Initialize(properties, attributes);
         
@@ -102,12 +107,12 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
             entity.AnimManager.StartAnimation(_animMeta);
         }
         
+        
         _physics = entity.GetBehavior<EntityBehaviorPassivePhysics>();
-        _repulseAgents = entity.GetBehavior<EntityBehaviorRepulseAgents>();
     }
 
     public override string PropertyName() {
-        return "vrails_track_rider";
+        return "vrails.track_rider";
     }
 
     // public override void OnEntitySpawn() {
@@ -116,17 +121,15 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
     //
     // public override void OnEntityLoaded() {
     // }
-    
-    
-    //TODO move to physics update
+
     public override void OnGameTick(float deltaTime) {
         if(entity.World.Side == EnumAppSide.Client) {
             _animMeta.AnimationSpeed = (float)entity.WatchedAttributes.GetDouble(SpeedAttribute);
-            return;
         }
+    }
 
-        var dt = 1f / 30f;//deltaTime;
-        
+    //TODO move to physics update
+    void IOrderedPhysicsTickBehavior.OnTick(double dt) {
         // this.entity.Alive = false;
         //cache1
         var speed = Speed;
@@ -140,10 +143,8 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
         var previousBp = PreviousBp;
         var posOnTrack = PosOnTrack;
         
-        
         //Restores anchors from previous position (needed after save loading)
         _lastAnchors ??= entity.World.GetBlockBehaviour<BlockBehaviorCartTrack>(previousBp)?.GetAnchorData();
-        
         
         if (track == null || anchors == null /* Does nothing anchors are not null when track is not null */) {
             if (WasOnTrack) {
@@ -311,7 +312,7 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
         
         return true;
     }
-
+    
     private void Derail() {
         if (_physics != null) {
              _physics.Ticking = true;
@@ -341,8 +342,12 @@ public class TrackRiderEntityBehaviour : EntityBehavior {
             posOnTrack = positionDot;
         }
     }
-
+    
     private void MarkDirty() {
         entity.Attributes.MarkPathDirty(RootAttribute);
+    }
+
+    void IOrderedPhysicsTickBehavior.AfterTick(double dt) {
+        PreviousSpeed = Speed;
     }
 }

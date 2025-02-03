@@ -2,14 +2,17 @@
 using VintageRails.Behaviors;
 using VintageRails.Blocks;
 using VintageRails.Entities;
+using VintageRails.Global;
 using VintageRails.Renderer;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Server;
 
 namespace VintageRails
 {
-    public class VintageRailsModSystem : ModSystem
-    {
+    public class VintageRailsModSystem : ModSystem {
+        public static readonly PhysicsBatch MinecartsBatch = new PhysicsBatch();
+        
         public override void Start(ICoreAPI api)
         {
             api.RegisterBlockClass(Mod.Info.ModID + ".Rails", typeof(BlockTrack));
@@ -21,12 +24,17 @@ namespace VintageRails
             api.RegisterEntity(Mod.Info.ModID + ".SeatSup", typeof(EntitySeatInstSupplier));
             
             api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".TrackRider", typeof(TrackRiderEntityBehaviour));
+            api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".OrderedPhysics", typeof(EntityBehaviorOrderedPhysics));
 
             new Harmony(Mod.Info.ModID).PatchAll();
         }
 
         public override void StartClientSide(ICoreClientAPI api) {
             api.RegisterEntityRendererClass(Mod.Info.ModID + ".ShapeFixedRot", typeof(YawPitchEntityShapeRenderer));
+        }
+
+        public override void StartServerSide(ICoreServerAPI api) {
+            api.Server.AddPhysicsTickable(MinecartsBatch);
         }
     }
 }
