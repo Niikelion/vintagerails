@@ -47,6 +47,7 @@
   "server": {
     "behaviors": [
       { "code": "vintagerails.TrackRider" },
+      { "code": "vintagerails.TrackCollision" },
       { "code": "repulseagents", "movable": true },
       { "code": "passivephysics" },
       { "code": "selectionboxes" },

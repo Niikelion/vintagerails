@@ -1,24 +1,21 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 using VintageRails.Rails;
 using VintageRails.Util;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
-using Vintagestory.API.Server;
-using Vintagestory.API.Util;
 using Vintagestory.GameContent;
 
 namespace VintageRails.Behaviors;
 
-public class TrackRiderEntityBehaviour : EntityBehavior, IOrderedPhysicsTickBehavior {
+public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehavior {
 
     public const string RootAttribute = "vrails.trackRider";
     public const string PosOnTrackAttribute = "posOnTrack";
-    public const string SpeedAttribute = "vrails.trackspeed";
     public const string SpeedAttribute = "vrails.speed";
+    public const string PreviousSpeedAttribute = "previousSpeedStd";
     public const string WasOnTrackAttribute = "wasOnTrack";
     public const string FacingAttribute = "facing";
     public const string PreviousTrackPosAttribute = "previousTrackPos";
@@ -52,14 +49,23 @@ public class TrackRiderEntityBehaviour : EntityBehavior, IOrderedPhysicsTickBeha
         } 
     }
     
-    private double Speed {
+    public double Speed {
         get => entity.WatchedAttributes.GetDouble(SpeedAttribute, 0);
         set {
             entity.WatchedAttributes.SetDouble(SpeedAttribute, value);
+        }
+    }
+
+    public double PreviousSpeed {
+        get => PersistentData.GetDouble(PreviousSpeedAttribute, 0);
+        set {
+            PersistentData.SetDouble(PreviousSpeedAttribute, value);
             MarkDirty();
         } 
     }
-    
+
+    public TrackAnchorData? LastAnchorData => _lastAnchors;
+
     private TrackAnchorData? _lastAnchors = null;
 
     private EntityBehaviorPassivePhysics? _physics = null;
@@ -84,7 +90,7 @@ public class TrackRiderEntityBehaviour : EntityBehavior, IOrderedPhysicsTickBeha
     
     [NotNull] private ITreeAttribute? PersistentData { get; set; }
 
-    public TrackRiderEntityBehaviour(Entity entity) : base(entity) {
+    public TrackRiderEntityBehavior(Entity entity) : base(entity) {
         
     }
     

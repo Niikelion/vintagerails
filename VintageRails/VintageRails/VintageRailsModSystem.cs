@@ -23,7 +23,8 @@ namespace VintageRails
             api.RegisterEntity(Mod.Info.ModID + ".Cart", typeof(EntityCart));
             api.RegisterEntity(Mod.Info.ModID + ".SeatSup", typeof(EntitySeatInstSupplier));
             
-            api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".TrackRider", typeof(TrackRiderEntityBehaviour));
+            api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".TrackRider", typeof(TrackRiderEntityBehavior));
+            api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".TrackCollision", typeof(EntityBehaviorTrackCollision));
             api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".OrderedPhysics", typeof(EntityBehaviorOrderedPhysics));
 
             new Harmony(Mod.Info.ModID).PatchAll();
