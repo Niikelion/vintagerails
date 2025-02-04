@@ -180,7 +180,10 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
 
         ApplyCollisionsAndPushing(ref speed);
         
-        posOnTrack += dt * speed / anchors.DeltaL;
+        // posOnTrack +=  / anchors.DeltaL;
+        ApplyMovement(posOnTrack,dt * speed, out var movementCorrection, out var facingCorrection);
+        speed *= movementCorrection;
+        Facing *= facingCorrection;
         
         var s = Facing;
         var adn2 = anchors.AnchorDeltaNorm.Clone();
@@ -188,59 +191,9 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         var y = -(float)(Math.Atan2(adn2.Z * s, adn2.X * s) - Math.PI / 2.0);
         var p = 0f;
         var r = (float)(Math.Acos(adn2.Dot(new Vec3d(0, 1, 0))) - Math.PI / 2.0) * s;
+
+        _nextPos.SetAngles(r, y, p);
         
-        _nextPos.SetAngles(r, y, p)
-            .SetPos(
-                new Vec3d(
-                    GameMath.Lerp(la.X + 0.5, ha.X + 0.5, posOnTrack),
-                    GameMath.Lerp(la.Y + 0.5, ha.Y + 0.5, posOnTrack),
-                    GameMath.Lerp(la.Z + 0.5, ha.Z + 0.5, posOnTrack)
-                ).Add(bp)
-            );
-
-        if (_nextPos.AsBlockPos != bp) {
-            (_, anchors, bp) = entity.World.GetTrackData(_nextPos.XYZ, tolerance);
-            if (anchors == null) {
-                return;
-            }
-            
-            var i1 = _lastAnchors.GetEntryFromMovement(speed);
-            var b = _lastAnchors[1 - i1];
-            var i2 = anchors.ClosestAnchor(b.AddCopy(previousBp - bp));
-            
-            var i1s = -(i1 * 2 - 1);
-            var i2s = -(i2 * 2 - 1);
-
-            //12
-            //      2.1 => 0.1
-            //      1.1 => 0.1
-            //00 => pos = pos - trunc(abs(pos))
-            //      2.1 => 0.9
-            //      1.1 => 0.9
-            //01 => pos = (1 + trunc(abs(pos))) - pos
-            //     -1.1 => 0.1
-            //     -0.1 => 0.1
-            //10 => pos = -pos - trunc(abs(pos))
-            //     -1.1 => 0.9
-            //     -0.1 => 0.9
-            //11 => pos = (1 + trunc(abs(pos))) + pos
-
-            //this is abs
-            posOnTrack *= i1s;
-            var tPos = (int)posOnTrack;
-            if (i2 == 0) {
-                posOnTrack -= tPos;
-            }
-            else {
-                posOnTrack = (1 + tPos) - posOnTrack;
-            }
-
-            speed *= Math.Sign(speed) * i2s;
-            Facing *= i1 == i2 ? 1 : -1;
-            // }
-        }
-
-        PosOnTrack = posOnTrack;
         Speed = speed;
     }
     
@@ -342,6 +295,102 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
 
             posOnTrack = positionDot;
         }
+    }
+
+    public void ApplyMovement(double currentPos, double movement, out int movementCorrection, out int facingCorrection) {
+        var newPos = currentPos + movement;
+
+        var deltaL = _lastAnchors!.DeltaL;
+        
+        // var posAbs = Math.Abs(deltaL / 2 - newPos) * 2;
+        
+        var bp = entity.Pos.AsBlockPos;
+        
+        /*
+         * dL = 1; nP = 1.1
+         * i = nP - dL / 2 = 0.6
+         * s = sign(i)
+         * pA = abs(i) * 2 = abs(1 / 2 - 1.1) * 2 = 1.2
+         * pA -= dL = 0.2
+         * pA1 = (pA / 2) / dL = pA / (2 * dL) = 0.2 / 2 = 0.1
+         * pA2 = i > 0 ? pA1 : 1 - pA1 = 0.1 Correct
+         */
+        /*
+         * dl = 1; nP = -0.1
+         * i = -0.1 - 0.5 = -0.6
+         * s = -1
+         * pA = 1.2
+         * pA -= 1 = 0.2
+         * pA1 = 0.2 / 2 = 0.1
+         * pA2 = 1 - pA1 = 0.9
+         */
+        /*
+         * dl = 0.5; nP = 2.1 //4 rails forward 0.2 leftover
+         * i = 2.1 - 0.25 = 1.85
+         * s = 1
+         * pA = 1.85 * 2 = 3.7
+         * pA -= dL * 7 = 0.2
+         * pA1 = 0.1 / dl = 0.2
+         */
+        
+        if (newPos > deltaL || newPos < 0) {
+            // var deltaL2 = deltaL;
+            //Always replaced
+            Vec3d pEnd = Vec3d.Zero;
+            var anchors = _lastAnchors;
+            var entry = anchors.GetEntryFromMovement(movement);
+            var entryOrig = entry;
+            
+            var posAbs = newPos > deltaL ? newPos - deltaL : -newPos;
+            while (posAbs > 0) {
+                pEnd = (anchors[1 - entry] * 1.1).AddToCenter(bp);
+                (bp, anchors, entry) = RailUtil.GetNextTrack(entity.World, bp, anchors, entry);
+                if (anchors == null) {
+                    break;
+                }
+                //For derailment
+                _lastAnchors = anchors;
+                deltaL = anchors.DeltaL;
+                posAbs -= deltaL;
+            }
+            posAbs += deltaL;
+            
+            if (anchors == null) {
+                _nextPos.SetPos(pEnd);
+                movementCorrection = 1;
+                facingCorrection = 1;
+                return;
+            }
+
+            movementCorrection = entryOrig == entry ? 1 : -1;
+            facingCorrection = entryOrig == entry ? 1 : -1;
+            
+            //posAbs *= -(entryOrig * 2 - 1);
+            if (entry == 1) {
+                posAbs = deltaL - posAbs;
+            }
+            
+            ApplyNextPos(bp, anchors, posAbs / deltaL);
+            PosOnTrack = posAbs;
+        }
+        else {
+            ApplyNextPos(bp, _lastAnchors, newPos / deltaL);
+            movementCorrection = 1;
+            facingCorrection = 1;
+            PosOnTrack = newPos;
+        }
+    }
+
+    private void ApplyNextPos(BlockPos bp, TrackAnchorData anchors, double posFactor) {
+        var la = anchors.LowerAnchor;
+        var ha = anchors.HigherAnchor;
+        _nextPos.SetPos(
+            new Vec3d(
+                GameMath.Lerp(la.X + 0.5, ha.X + 0.5, posFactor),
+                GameMath.Lerp(la.Y + 0.5, ha.Y + 0.5, posFactor),
+                GameMath.Lerp(la.Z + 0.5, ha.Z + 0.5, posFactor)
+            ).Add(bp)
+        );
     }
     
     private void MarkDirty() {

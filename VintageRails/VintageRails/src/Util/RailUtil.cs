@@ -57,5 +57,14 @@ public static class RailUtil {
         } 
         return block.GetBehavior<T>();
     }
+
+    public static (BlockPos pos, TrackAnchorData? anchors, int entryAnchor) GetNextTrack(IWorldAccessor world, BlockPos bp, TrackAnchorData anchors, int entryAnchor) {
+        var anchor = anchors[1 - entryAnchor];
+        
+        var pos = (anchor * 1.1).AddToCenter(bp);
+        var (_, nextAnchors, foundAt) = world.GetTrackData(pos, SnapToleranceBase);
+
+        return (foundAt, nextAnchors, nextAnchors?.ClosestAnchor(anchor.AddCopy(bp - foundAt)) ?? 1);
+    }
     
 }

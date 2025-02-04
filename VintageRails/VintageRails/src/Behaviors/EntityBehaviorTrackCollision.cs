@@ -114,7 +114,7 @@ public class EntityBehaviorTrackCollision : EntityBehavior, IOrderedPhysicsTickB
             otherSpeed *= dotSign;
 
             var targetSpeed = U.VelocityAfterCollision(previousSpeed, otherSpeed, 
-                0,// (_restitution + otherCollisions._restitution) / 2,
+                 (_restitution + otherCollisions._restitution) / 2,
                 Mass, Mass);
             
             speedDelta = targetSpeed - previousSpeed;
