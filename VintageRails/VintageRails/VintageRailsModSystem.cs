@@ -27,6 +27,8 @@ namespace VintageRails
             api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".TrackCollision", typeof(EntityBehaviorTrackCollision));
             api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".OrderedPhysics", typeof(EntityBehaviorOrderedPhysics));
 
+            api.RegisterCollectibleBehaviorClass(Mod.Info.ModID + ".CartLink", typeof(CollectibleBehaviorCartLink));
+            
             new Harmony(Mod.Info.ModID).PatchAll();
         }
 

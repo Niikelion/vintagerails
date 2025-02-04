@@ -8,6 +8,8 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
+using static VintageRails.Util.RailUtil;
+
 namespace VintageRails.Behaviors;
 
 public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehavior {
@@ -60,17 +62,10 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
             MarkDirty();
         } 
     }
-
-    public TrackAnchorData? LastAnchorData => _lastAnchors;
-
-    private TrackAnchorData? _lastAnchors = null;
-
-    private EntityBehaviorPassivePhysics? _physics = null;
-    private EntityPartitioning _partitionUtil;
     
-    private BlockPos? PreviousBp {
+    public BlockPos? PreviousBp {
         get => PersistentData.GetBlockPos(PreviousTrackPosAttribute, null);
-        set {
+        private set {
             if(value != null) {
                 PersistentData.SetBlockPos(PreviousTrackPosAttribute, value);
             }
@@ -80,8 +75,15 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
             MarkDirty();
         } 
     }
+    
+    public TrackAnchorData? LastAnchorData => _lastAnchors;
 
-    private EntityPos _nextPos = new EntityPos();
+    private TrackAnchorData? _lastAnchors = null;
+
+    private EntityBehaviorPassivePhysics? _physics = null;
+    private EntityPartitioning _partitionUtil;
+
+    private readonly EntityPos _nextPos = new EntityPos();
     
     private string _movingAnimation = "moving";
 
@@ -133,6 +135,13 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         }
     }
 
+    public int GetFacingAnchorIndex(CartDirection cartDirection) => cartDirection switch {
+        CartDirection.Forward => DirectionToAnchor(Facing),
+        CartDirection.Backward => DirectionToAnchor(-Facing),
+        CartDirection.Any => throw new ArgumentException("Invalid direction (cannot use Any)"),
+        _ => throw new ArgumentException("Invalid direction")
+    };
+    
     //TODO move to physics update
     void IOrderedPhysicsTickBehavior.OnTick(double dt) {
         // this.entity.Alive = false;
@@ -296,8 +305,8 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
             posOnTrack = positionDot;
         }
     }
-
-    public void ApplyMovement(double currentPos, double movement, out int movementCorrection, out int facingCorrection) {
+    
+    private void ApplyMovement(double currentPos, double movement, out int movementCorrection, out int facingCorrection) {
         var newPos = currentPos + movement;
 
         var deltaL = _lastAnchors!.DeltaL;
