@@ -9,8 +9,8 @@ namespace VintageRails.Behaviors
     {
         public float SpeedMultiplier { get; private set; }
         public float Friction { get; private set; } = 0.1f;
-        public float ConstantAcceleration { get; private set; } = 0f;
-        public float SnapToleranceMult { get; private set; } = 0f;
+        public float ConstantAcceleration { get; private set; }
+        public float SnapToleranceMult { get; private set; }
         
         public BlockFacing StartDir { get; private set; }
         public BlockFacing EndDir { get; private set; }
