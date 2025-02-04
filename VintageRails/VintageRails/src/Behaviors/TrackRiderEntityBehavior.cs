@@ -338,12 +338,16 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
             //Always replaced
             Vec3d pEnd = Vec3d.Zero;
             var anchors = _lastAnchors;
+            var previousAnchors = anchors;
             var entry = anchors.GetEntryFromMovement(movement);
+            var previousEntry = entry;
             var entryOrig = entry;
             
             var posAbs = newPos > deltaL ? newPos - deltaL : -newPos;
             while (posAbs > 0) {
-                pEnd = (anchors[1 - entry] * 1.1).AddToCenter(bp);
+                pEnd = (anchors[1 - entry]).AddToCenter(bp);
+                previousAnchors = anchors;
+                previousEntry = entry;
                 (bp, anchors, entry) = RailUtil.GetNextTrack(entity.World, bp, anchors, entry);
                 if (anchors == null) {
                     break;
@@ -356,7 +360,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
             posAbs += deltaL;
             
             if (anchors == null) {
-                _nextPos.SetPos(pEnd);
+                _nextPos.SetPos(pEnd + previousAnchors.AnchorDeltaNorm * 0.1 * -(previousEntry * 2 - 1));
                 movementCorrection = 1;
                 facingCorrection = 1;
                 return;
