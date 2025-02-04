@@ -17,14 +17,7 @@ public static class RailUtil {
             var offset = new BlockPos(0, 1, 0);
             if ((pos.Y % 1.0) < 0.5) {
                 offset *= -1;
-                // bp.Add(offset);
-                // track = world.GetBlockBehaviour<BlockBehaviorCartTrack>(bp);
             }
-            // if((pos.Y % 1.0) >= 0.5) {
-            //     bp.Add(offset);
-            //     track = world.GetBlockBehaviour<BlockBehaviorCartTrack>(bp);
-            // }
-            
             bp.Add(offset);
             track = world.GetBlockBehaviour<BlockBehaviorCartTrack>(bp);
         }

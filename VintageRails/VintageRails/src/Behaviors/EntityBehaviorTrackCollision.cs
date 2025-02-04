@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using VintageRails.Rails;
+using VintageRails.Util;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -113,28 +114,55 @@ public class EntityBehaviorTrackCollision : EntityBehavior, IOrderedPhysicsTickB
 
             otherSpeed *= dotSign;
 
-            var targetSpeed = U.VelocityAfterCollision(previousSpeed, otherSpeed, 
-                 (_restitution + otherCollisions._restitution) / 2,
-                Mass, Mass);
+            // var targetSpeed = U.VelocityAfterCollision(previousSpeed, otherSpeed, 
+            //      (_restitution + otherCollisions._restitution) / 2,
+            //     Mass, Mass);
+            //
+            // speedDelta = targetSpeed - previousSpeed;
             
-            speedDelta = targetSpeed - previousSpeed;
+            var otherBp = other.SidedPos.AsBlockPos;
+            var thisBp = entity.SidedPos.AsBlockPos;
+            
+            double signedDistance;
+            if (otherBp == thisBp) {
+                signedDistance = TrackRider.PosOnTrack - otherRider.PosOnTrack;
+            }
+            else {
+                // var (track, anchors, foundAt) = entity.World.GetTrackData(otherBp.ToVec3d(), RailUtil.SnapToleranceBase);
+                // var 
+                // var ca = anchors.ClosestAnchor(foundAt -);
+                var an1 = TrackRider.LastAnchorData!;
+                var an2 = otherRider.LastAnchorData!;
+                var a1 = an1.ClosestAnchor((otherBp - thisBp).ToVec3d());
+                var a2 = an2.ClosestAnchor((thisBp - otherBp).ToVec3d());
+                var distance = 0.0;
+                if (a1 == 0) {
+                    distance += TrackRider.PosOnTrack;
+                }
+                else {
+                    distance += an1.DeltaL - TrackRider.PosOnTrack;
+                }
+                
+                if (a2 == 0) {
+                    distance += otherRider.PosOnTrack;
+                }
+                else {
+                    distance += an2.DeltaL - otherRider.PosOnTrack;
+                }
 
-            // var posDelta = entity.Pos.XYZ - other.Pos.XYZ;
-            // var dot2 = posDelta.Dot(thisDir);
-            var dv1 = new Vec2d(dv.X, dv.Z);
-            var otherDir2 = new Vec2d(otherDir.X, otherDir.Z);
-            var dot2 = dv1.Dot(otherDir2);
-            separationDelta = (1 - Math.Abs(dot2)) * Math.Sign(dot2);
-            // dot2 = ;
-            // separationDelta = Math.Min(dx, dz);
-            // if (dx < dz) 
-            //     separationDelta -= maxDx;
-            // }
-            // else {
-            //     separationDelta -= maxDz;
-            // }
-            // separationDelta *= -Math.Sign(dot2);
-            // separationDelta /= 2;
+                distance *= a1 == 0 ? 1 : -1;
+                signedDistance = distance;
+            }
+            
+            const double maxDistance = 1;
+            const double maxForce = 5;
+            const double constantForce = 0;
+            speedDelta += (constantForce + Math.Clamp((maxDistance - Math.Abs(signedDistance)) / maxDistance * maxForce, 0, maxForce)) * Math.Sign(signedDistance);
+            
+            // var dv1 = new Vec2d(dv.X, dv.Z);
+            // var otherDir2 = new Vec2d(otherDir.X, otherDir.Z);
+            // var dot2 = dv1.Dot(otherDir2);
+            // separationDelta = (1 - Math.Abs(dot2)) * Math.Sign(dot2);
             return true;
         }
         return false;

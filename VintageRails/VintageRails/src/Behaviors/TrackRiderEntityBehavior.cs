@@ -82,6 +82,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
     }
 
     private EntityPos _nextPos = new EntityPos();
+    private double _nextPosOnTrack = 0.0;
     
     private string _movingAnimation = "moving";
 
@@ -181,7 +182,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         ApplyCollisionsAndPushing(ref speed);
         
         // posOnTrack +=  / anchors.DeltaL;
-        ApplyMovement(posOnTrack,dt * speed, out var movementCorrection, out var facingCorrection);
+        ApplyMovement(ref posOnTrack,dt * speed, out var movementCorrection, out var facingCorrection);
         speed *= movementCorrection;
         Facing *= facingCorrection;
         
@@ -193,6 +194,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         var r = (float)(Math.Acos(adn2.Dot(new Vec3d(0, 1, 0))) - Math.PI / 2.0) * s;
 
         _nextPos.SetAngles(r, y, p);
+        _nextPosOnTrack = posOnTrack;
         
         Speed = speed;
     }
@@ -200,6 +202,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
     void IOrderedPhysicsTickBehavior.AfterTick(double dt) {
         PreviousSpeed = Speed;
         if (WasOnTrack) {
+            PosOnTrack = _nextPosOnTrack;
             entity.ServerPos.SetAngles(_nextPos).SetPos(_nextPos);
             entity.Pos.SetFrom(entity.ServerPos);
         }
@@ -297,7 +300,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         }
     }
 
-    public void ApplyMovement(double currentPos, double movement, out int movementCorrection, out int facingCorrection) {
+    public void ApplyMovement(ref double currentPos, double movement, out int movementCorrection, out int facingCorrection) {
         var newPos = currentPos + movement;
 
         var deltaL = _lastAnchors!.DeltaL;
@@ -375,13 +378,13 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
             }
             
             ApplyNextPos(bp, anchors, posAbs / deltaL);
-            PosOnTrack = posAbs;
+            currentPos = posAbs;
         }
         else {
             ApplyNextPos(bp, _lastAnchors, newPos / deltaL);
             movementCorrection = 1;
             facingCorrection = 1;
-            PosOnTrack = newPos;
+            currentPos = newPos;
         }
     }
 
