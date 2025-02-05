@@ -32,7 +32,7 @@ public static class RailUtil {
         var (sideDelta, upDelta) = CalculateDistances(anchors.LowerAnchor, anchors.HigherAnchor, localPos);
 
         const double sideTolerance = 0.5;
-        const double upTolerance = 0.15;
+        const double upTolerance = 0.25;
         const double downTolerance = 0.4;
         
         if (Math.Abs(sideDelta) < sideTolerance && upDelta is >= 0 and < upTolerance or < 0 and > -downTolerance)

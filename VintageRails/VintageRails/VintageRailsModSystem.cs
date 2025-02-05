@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using VintageRails.Behaviors;
+using VintageRails.Behaviors.Callbacks;
 using VintageRails.Blocks;
 using VintageRails.Entities;
 using VintageRails.Global;
@@ -25,6 +26,7 @@ namespace VintageRails
             
             api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".TrackRider", typeof(TrackRiderEntityBehavior));
             api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".TrackCollision", typeof(EntityBehaviorTrackCollision));
+            api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".SimpleCartCollisionResolver", typeof(EntityBehaviorSimpleCartCollisions));
             api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".OrderedPhysics", typeof(EntityBehaviorOrderedPhysics));
 
             new Harmony(Mod.Info.ModID).PatchAll();

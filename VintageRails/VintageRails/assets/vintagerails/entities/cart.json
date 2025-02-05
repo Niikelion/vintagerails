@@ -48,6 +48,7 @@
     "behaviors": [
       { "code": "vintagerails.TrackRider" },
       { "code": "vintagerails.TrackCollision" },
+      { "code": "vintagerails.SimpleCartCollisionResolver" },
       { "code": "repulseagents", "movable": true },
       { "code": "passivephysics" },
       { "code": "selectionboxes" },
