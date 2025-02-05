@@ -4,9 +4,6 @@
   "behaviors": [
     { "name": "Unstable" },
     {
-      "name": "RightClickPickup"
-    },
-    {
       "name": "vintagerails.CartTrack",
       "properties": {
         "speedMultiplier": 1,

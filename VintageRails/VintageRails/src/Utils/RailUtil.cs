@@ -71,6 +71,9 @@ public static class RailUtil {
                 var d = nextTrack.AnchorData;
                 var lp = nextTrackPos.AddCopy(d.LowerAnchor.blockOffset).AsVec3i;
                 var hp = nextTrackPos.AddCopy(d.HigherAnchor.blockOffset).AsVec3i;
+
+                if (!nextTrack.Raised) nextTrack = null;
+                
                 if (lp != bp.AsVec3i && hp != bp.AsVec3i) nextTrack = null;
             }
         }

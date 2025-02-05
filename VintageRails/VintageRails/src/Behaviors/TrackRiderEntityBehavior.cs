@@ -269,7 +269,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         var anchorDeltaNorm = anchors.AnchorDeltaNorm;
         var motionDot = anchorDeltaNorm.Dot(motion);
         speed = motionDot / U.PhysicsTickInterval;
-            
+        
         var localPos = anchors.LowerAnchor.offset.SubCopy(entity.Pos.XYZ.RelativeToCenter(railPos));
         var positionDot = -localPos.Dot(anchorDeltaNorm) / anchors.DeltaL;
 
