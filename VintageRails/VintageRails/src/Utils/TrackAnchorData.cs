@@ -1,15 +1,15 @@
 using System;
 using Vintagestory.API.MathTools;
 
-namespace VintageRails.Rails;
+namespace VintageRails.Utils;
 
 public class TrackAnchorData {
 
-    public const int AnchorResolutionOffset = 1;
-    public const int AnchorResolution = AnchorResolutionOffset * 2 + 1;
-    public const int BoundY = 1;
-    public const int BoundZ = AnchorResolution;
-    public const int BoundX = BoundZ * BoundZ;
+    private const int AnchorResolutionOffset = 1;
+    private const int AnchorResolution = AnchorResolutionOffset * 2 + 1;
+    private const int BoundY = 1;
+    private const int BoundZ = AnchorResolution;
+    private const int BoundX = BoundZ * BoundZ;
     
     public (Vec3d offset, Vec3i blockOffset) this[int i] => i switch
         {
@@ -69,7 +69,7 @@ public class TrackAnchorData {
 
     private static (T, T) Swap<T>(bool swap, T a, T b) => swap ? (b, a) : (a, b);
     
-    private static bool SortOffsets(Vec3i a1, Vec3i a2) => Encode(a1) > Encode(a2);
+    private static bool SortOffsets(Vec3i a1, Vec3i a2) => Encode(a1) <= Encode(a2);
 
     private static int Encode(Vec3i anchor) =>
         (anchor.X + AnchorResolutionOffset) * BoundX +

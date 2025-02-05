@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using VintageRails.Rails;
-using VintageRails.Util;
+using VintageRails.Utils;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
@@ -10,15 +9,15 @@ using Vintagestory.GameContent;
 
 namespace VintageRails.Behaviors;
 
-public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehavior {
-
-    public const string RootAttribute = "vrails.trackRider";
-    public const string PosOnTrackAttribute = "posOnTrack";
-    public const string SpeedAttribute = "vrails.speed";
-    public const string PreviousSpeedAttribute = "previousSpeedStd";
-    public const string WasOnTrackAttribute = "wasOnTrack";
-    public const string FacingAttribute = "vrails.facing";
-    public const string PreviousTrackPosAttribute = "previousTrackPos";
+public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehavior
+{
+    private const string RootAttribute = "vrails.trackRider";
+    private const string PosOnTrackAttribute = "posOnTrack";
+    private const string SpeedAttribute = "vrails.speed";
+    private const string PreviousSpeedAttribute = "previousSpeedStd";
+    private const string WasOnTrackAttribute = "wasOnTrack";
+    private const string FacingAttribute = "vrails.facing";
+    private const string PreviousTrackPosAttribute = "previousTrackPos";
 
     private const double Mass = 1.0;
 
@@ -30,6 +29,8 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         get => PersistentData.GetBool(WasOnTrackAttribute);
         private set {
             PersistentData.SetBool(WasOnTrackAttribute, value);
+            if (_physics != null)
+                _physics.Ticking = !value;
             MarkDirty();
         } 
     }
@@ -65,9 +66,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         } 
     }
 
-    public TrackAnchorData? LastAnchorData => _lastAnchors;
-
-    private TrackAnchorData? _lastAnchors;
+    public TrackAnchorData? LastAnchorData { get; private set; }
 
     private EntityBehaviorPassivePhysics? _physics;
     private EntityPartitioning _partitionUtil;
@@ -94,9 +93,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
     
     [NotNull] private ITreeAttribute? PersistentData { get; set; }
 
-    public TrackRiderEntityBehavior(Entity entity) : base(entity) {
-        
-    }
+    public TrackRiderEntityBehavior(Entity entity) : base(entity) {}
     
     public override void Initialize(EntityProperties properties, JsonObject attributes) {
         base.Initialize(properties, attributes);
@@ -137,10 +134,8 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         //cache1
         var speed = Speed;
         
-        var tolerance = RailUtil.SnapToleranceBase + (WasOnTrack ? Math.Abs(speed) * dt : entity.SidedPos.Motion.Length());
-        
         var entityPos = entity.SidedPos.XYZ;
-        var (track, bp) = entity.World.GetTrackData(entityPos);
+        var (track, bp) = entity.World.GetTrackData(entityPos, SideSnappingDistance, DownSnappingDistance, UpSnappingDistance);
         var anchors = track?.AnchorData;
         PreviousBp ??= bp;
         //cache2
@@ -148,32 +143,25 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         var posOnTrack = PosOnTrack;
         
         //Restores anchors from previous position (needed after save loading)
-        _lastAnchors ??= entity.World.GetBlockBehaviour<BlockBehaviorCartTrack>(previousBp)?.AnchorData;
+        LastAnchorData ??= entity.World.GetBlockBehaviour<BlockBehaviorCartTrack>(previousBp)?.AnchorData;
         
         if (track == null || anchors == null /* Does nothing anchors are not null when track is not null */) {
-            if (WasOnTrack) {
+            if (WasOnTrack)
                 Derail();
-            }
 
             WasOnTrack = false;
             return;
         }
-        
-        var wasRerailed = false;
-        if (!WasOnTrack) {
+
+        if (!WasOnTrack)
             Rerail(anchors, bp, ref speed, ref posOnTrack);
-            wasRerailed = true;
-        }
         
         WasOnTrack = true;
         
         if (bp != previousBp) {
             PreviousBp = previousBp.Set(bp);
-            _lastAnchors = anchors;
+            LastAnchorData = anchors;
         }
-        
-        var la = anchors.LowerAnchor;
-        var ha = anchors.HigherAnchor;
         
         speed += track.ConstantAcceleration * dt - speed * track.Friction * dt;
 
@@ -199,11 +187,11 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
     void IOrderedPhysicsTickBehavior.AfterTick(double dt)
     {
         PreviousSpeed = Speed;
-        if (WasOnTrack) {
-            PosOnTrack = _nextPosOnTrack;
-            entity.ServerPos.SetAngles(_nextPos).SetPos(_nextPos);
-            entity.Pos.SetFrom(entity.ServerPos);
-        }
+        if (!WasOnTrack) return;
+        
+        PosOnTrack = _nextPosOnTrack;
+        entity.ServerPos.SetAngles(_nextPos).SetPos(_nextPos);
+        entity.Pos.SetFrom(entity.ServerPos);
     }
     
     private void ApplyCollisionsAndPushing(ref double speed)
@@ -226,13 +214,13 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
 
     private bool HandleEntityCollision(Entity e, ref double speed)
     {
-        if (_lastAnchors == null)
+        if (LastAnchorData == null)
         {
             //Stop iteration
             return false;
         }
         
-        var box1 = this.entity.SelectionBox;
+        var box1 = entity.SelectionBox;
         var box2 = e.SelectionBox;
 
         var dv = (box1.Center - box2.Center) + (entity.SidedPos.XYZ - e.SidedPos.XYZ);
@@ -252,7 +240,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         var maxDist = Math.Min(Math.Min(maxDx, maxDy), maxDz);
             
         var l = dv.Length();
-        var dot = _lastAnchors.AnchorDeltaNorm.Dot(dv) / l;
+        var dot = LastAnchorData.AnchorDeltaNorm.Dot(dv) / l;
         var l2 = Math.Clamp(l, 0, maxDist) / maxDist;
         var l3 = 1 - l2;
 
@@ -265,19 +253,11 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
     
     private void Derail()
     {
-        if (_physics != null)
-        {
-             _physics.Ticking = true;
-            if (_lastAnchors != null)
-            {
-                var i = TrackAnchorData.GetEntryFromMovement(Speed);
-                var speed = Math.Abs(Speed);
-                entity.SidedPos.Motion.Set(_lastAnchors[1].offset - _lastAnchors[0].offset).Normalize().Mul(Speed * U.PhysicsTickInterval);
-            }
-        }
+        if (_physics != null && LastAnchorData is not null)
+            entity.SidedPos.Motion.Set(LastAnchorData[1].offset - LastAnchorData[0].offset).Normalize().Mul(Speed * U.PhysicsTickInterval);
         Speed = 0;
         PreviousBp = null;
-        _lastAnchors = null;
+        LastAnchorData = null;
         // Add more involved logic?
     }
     
@@ -285,7 +265,6 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
     {
         if (_physics == null) return;
         
-        _physics.Ticking = false;
         var motion = entity.SidedPos.Motion;
         var anchorDeltaNorm = anchors.AnchorDeltaNorm;
         var motionDot = anchorDeltaNorm.Dot(motion);
@@ -297,11 +276,11 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         posOnTrack = positionDot;
     }
 
-    public void ApplyMovement(ref double currentPos, double movement, out int movementCorrection, out int facingCorrection)
+    private void ApplyMovement(ref double currentPos, double movement, out int movementCorrection, out int facingCorrection)
     {
         var newPos = currentPos + movement;
 
-        var deltaL = _lastAnchors!.DeltaL;
+        var deltaL = LastAnchorData!.DeltaL;
         
         var bp = entity.Pos.AsBlockPos;
         
@@ -309,24 +288,23 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         {
             //Always replaced
             Vec3d pEnd = Vec3d.Zero;
-            var anchors = _lastAnchors;
+            var anchors = LastAnchorData;
             var previousAnchors = anchors;
             var entry = TrackAnchorData.GetEntryFromMovement(movement);
             var previousEntry = entry;
             var entryOrig = entry;
-            BlockBehaviorCartTrack? track = null;
-            
+
             var posAbs = newPos > deltaL ? newPos - deltaL : -newPos;
             while (posAbs > 0) {
                 pEnd = anchors[1 - entry].offset.AddToCenter(bp);
                 previousAnchors = anchors;
                 previousEntry = entry;
-                (track, entry) = RailUtil.GetNextTrack(entity.World, bp, anchors, entry);
+                (var track, bp, entry) = RailUtil.GetNextTrack(entity.World, bp, anchors, entry);
                 anchors = track?.AnchorData;
                 if (anchors == null) break;
                 
                 //For derailment
-                _lastAnchors = anchors;
+                LastAnchorData = anchors;
                 deltaL = anchors.DeltaL;
                 posAbs -= deltaL;
             }
@@ -350,7 +328,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         }
         else
         {
-            ApplyNextPos(bp, _lastAnchors, newPos / deltaL);
+            ApplyNextPos(bp, LastAnchorData, newPos / deltaL);
             movementCorrection = 1;
             facingCorrection = 1;
             currentPos = newPos;
