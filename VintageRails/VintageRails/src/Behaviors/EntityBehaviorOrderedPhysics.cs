@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using VintageRails.Util;
+using VintageRails.Utils;
 using Vintagestory.API.Common.Entities;
 
 namespace VintageRails.Behaviors;

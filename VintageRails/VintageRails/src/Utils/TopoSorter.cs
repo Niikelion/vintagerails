@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace VintageRails.Util;
+namespace VintageRails.Utils;
 
 public class TopoSorter<T> where T : notnull
 {

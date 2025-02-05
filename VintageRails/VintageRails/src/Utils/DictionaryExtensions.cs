@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace VintageRails.Util
+namespace VintageRails.Utils
 {
     public static class DictionaryExtensions
     {

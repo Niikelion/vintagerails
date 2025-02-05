@@ -10,16 +10,12 @@
       "name": "vintagerails.CartTrack",
       "properties": {
         "speedMultiplier": 1,
-        "accelerationbyType": {
+        "accelerationByType": {
           "*-raised_ns": -5,
           "*-raised_sn": 5,
           "*-raised_we": -5,
           "*-raised_ew": 5,
           "*": 0
-        },
-        "snapMultbyType": {
-          "*-raised_*": 2,
-          "*": 1
         },
         "friction": 0.1
       }
@@ -36,17 +32,17 @@
       "groupBy": [ "vintagerails:vintagerails-*" ]
     }
   },
-  "variantgroups": [
+  "variantGroups": [
     {
       "code": "type",
       "states": [ "curved_es", "curved_sw", "curved_wn", "curved_ne", "flat_ns", "flat_we", "raised_ns", "raised_we", "raised_sn", "raised_ew" ]
     }
   ],
-  "creativeinventory": {
+  "creativeInventory": {
     "general": [ "vintagerails-flat_ns" ],
     "transport": [ "vintagerails-flat_ns" ]
   },
-  "blockmaterial": "Metal",
+  "blockMaterial": "Metal",
   "shapeByType": {
     "*-curved_sw": {
       "base": "block/rails/curved_es",
@@ -78,8 +74,8 @@
     },
     "*": { "base": "block/rails/{type}" }
   },
-  "sidesolid": { "all": false },
-  "sideopaque": { "all": false },
+  "sideSolid": { "all": false },
+  "sideOpaque": { "all": false },
   "lightAbsorption": 0,
   "textures": {
     "metal": {
@@ -89,7 +85,7 @@
       "base": "game:block/wood/planks/generic"
     }
   },
-  "selectionbox": {
+  "selectionBox": {
     "x1": 0,
     "y1": 0,
     "z1": 0,
@@ -100,7 +96,7 @@
   "drops": [
     { "type": "block", "code": "vintagerails:vintagerails-flat_ns" }
   ],
-  "collisionbox": null,
+  "collisionBox": null,
   "guiTransform": {
     "translation": {
       "x": 0,
