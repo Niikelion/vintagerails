@@ -10,12 +10,17 @@ namespace VintageRails.Behaviors
         public float SpeedMultiplier { get; private set; }
         public float Friction { get; private set; } = 0.1f;
         public float ConstantAcceleration { get; private set; }
-        public float SnapToleranceMult { get; private set; }
-        
-        public BlockFacing StartDir { get; private set; }
-        public BlockFacing EndDir { get; private set; }
+
+        public BlockFacing StartDir { get; private set; } = BlockFacing.NORTH;
+        public BlockFacing EndDir { get; private set; } = BlockFacing.SOUTH;
         public bool Raised { get; private set; }
 
+        public BlockFacing[] EndsDirections => endsDirections ??= new[] { StartDir, EndDir };
+        
+        private BlockFacing[]? endsDirections;
+
+        public TrackAnchorData AnchorData { get; protected set; }
+        
         public BlockBehaviorCartTrack(Block block) : base(block) {}
 
         public override void Initialize(JsonObject properties)
@@ -44,13 +49,21 @@ namespace VintageRails.Behaviors
             EndDir = hasEndDir ? BlockFacing.FromFirstLetter(properties["endDir"].AsString()) : EndDir;
             
             ConstantAcceleration = properties["acceleration"].AsFloat();
-            SnapToleranceMult = properties["snapMult"].AsFloat();
             Friction = properties["friction"].AsFloat();
+
+            AnchorData = TrackAnchorData.OfDirections(StartDir, EndDir, Raised);
         }
 
-        public TrackAnchorData GetAnchorData() {
-            return TrackAnchorData.OfDirections(StartDir, EndDir, Raised);
+        public override void OnBlockPlaced(IWorldAccessor world, BlockPos blockPos, ref EnumHandling handling)
+        {
+            base.OnBlockPlaced(world, blockPos, ref handling);
+            //
         }
-        
+
+        public override void OnBlockRemoved(IWorldAccessor world, BlockPos pos, ref EnumHandling handling)
+        {
+            base.OnBlockRemoved(world, pos, ref handling);
+            //
+        }
     }
 }

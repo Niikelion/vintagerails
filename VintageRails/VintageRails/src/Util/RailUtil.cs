@@ -10,7 +10,13 @@ public static class RailUtil {
 
     public const double SnapToleranceBase = 0.125;
     
-    public static (BlockBehaviorCartTrack? track, TrackAnchorData? anchors, BlockPos foundAt) GetTrackData(this IWorldAccessor world, Vec3d pos, double distanceTolerance) {
+    public static (BlockBehaviorCartTrack? track, BlockPos foundAt) GetTrackData(
+        this IWorldAccessor world,
+        Vec3d pos,
+        double sideTolerance = 0.5,
+        double downTolerance = 0.15,
+        double upTolerance = 0.4
+    ) {
         var bp = pos.AsBlockPos;
         var track = world.GetBlockBehaviour<BlockBehaviorCartTrack>(bp);
 
@@ -23,22 +29,18 @@ public static class RailUtil {
             track = world.GetBlockBehaviour<BlockBehaviorCartTrack>(bp);
         }
         
-        if (track == null) return (null, null, bp);
+        if (track == null) return (null, bp);
         
-        var anchors = track.GetAnchorData();
+        var anchors = track.AnchorData;
 
         var localPos = pos.RelativeToCenter(bp);
         
-        var (sideDelta, upDelta) = CalculateDistances(anchors.LowerAnchor, anchors.HigherAnchor, localPos);
-
-        const double sideTolerance = 0.5;
-        const double upTolerance = 0.15;
-        const double downTolerance = 0.4;
+        var (sideDelta, upDelta) = CalculateDistances(anchors.LowerAnchor.offset, anchors.HigherAnchor.offset, localPos);
         
-        if (Math.Abs(sideDelta) < sideTolerance && upDelta is >= 0 and < upTolerance or < 0 and > -downTolerance)
-            return (track, anchors, bp);
+        if (Math.Abs(sideDelta) < sideTolerance && ((upDelta >= 0 && upDelta < downTolerance) || (upDelta < 0 && upDelta > -upTolerance)))
+            return (track, bp);
 
-        return (null, null, bp);
+        return (null, bp);
     }
 
     private static (double sideDistance, double upDistance) CalculateDistances(Vec3d fromPos, Vec3d toPos, Vec3d targetPos)
@@ -53,22 +55,21 @@ public static class RailUtil {
         return (relativePos.Dot(sideDir), relativePos.Dot(upDir));
     }
     
-    public static T? GetBlockBehaviour<T>(this IWorldAccessor world, BlockPos pos) where T : BlockBehavior{
-        var block = world.BlockAccessor.GetBlock(pos);
-        
-        if (block == null) {
-            return null;
-        } 
-        return block.GetBehavior<T>();
-    }
+    public static T? GetBlockBehaviour<T>(this IWorldAccessor world, BlockPos pos) where T : BlockBehavior =>
+        world.BlockAccessor.GetBlock(pos)?.GetBehavior<T>();
 
-    public static (BlockPos pos, TrackAnchorData? anchors, int entryAnchor) GetNextTrack(IWorldAccessor world, BlockPos bp, TrackAnchorData anchors, int entryAnchor) {
+    public static (BlockBehaviorCartTrack? track, int entryAnchor) GetNextTrack(IWorldAccessor world, BlockPos bp, TrackAnchorData anchors, int entryAnchor)
+    {
         var anchor = anchors[1 - entryAnchor];
-        
-        var pos = (anchor * 1.1).AddToCenter(bp);
-        var (_, nextAnchors, foundAt) = world.GetTrackData(pos, SnapToleranceBase);
 
-        return (foundAt, nextAnchors, nextAnchors?.ClosestAnchor(anchor.AddCopy(bp - foundAt)) ?? 1);
+        var nextTrackPos = bp.AddCopy(anchor.blockOffset);
+        
+        var nextTrack = world.GetTrackAtPos(nextTrackPos);
+        var nextAnchors = nextTrack?.AnchorData;
+
+        return (nextTrack, nextAnchors?.ClosestAnchor(anchor.offset.AddCopy(bp - nextTrackPos)) ?? 1);
     }
-    
+
+    public static BlockBehaviorCartTrack? GetTrackAtPos(this IWorldAccessor world, BlockPos pos) =>
+        world.GetBlockBehaviour<BlockBehaviorCartTrack>(pos);
 }

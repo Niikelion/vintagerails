@@ -17,10 +17,6 @@
           "*-raised_ew": 5,
           "*": 0
         },
-        "snapMultbyType": {
-          "*-raised_*": 2,
-          "*": 1
-        },
         "friction": 0.1
       }
     },
