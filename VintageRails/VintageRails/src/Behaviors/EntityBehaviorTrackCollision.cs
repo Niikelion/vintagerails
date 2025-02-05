@@ -65,10 +65,18 @@ public class EntityBehaviorTrackCollision : EntityBehavior, IOrderedPhysicsTickB
             return true;
         }, EnumEntitySearchType.Inanimate);
 
+        double prevPosOnTrack = TrackRider.PosOnTrack;
+        
         if (hitCout > 0) {
             TrackRider.Speed = speed + deltaAcc / hitCout;
             TrackRider.PosOnTrack += separationAcc / hitCout;
         }
+        
+        // bool willCollide = entity.World.CollisionTester.IsColliding(entity.World.BlockAccessor, entity.CollisionBox, entity.Pos.AheadCopy(-TrackRider.PreviousSpeed * dt * TrackRider.Facing).XYZ, false);
+        // if (!willCollide) return;
+        //
+        // TrackRider.Speed = 0;
+        // TrackRider.PosOnTrack = prevPosOnTrack;
     }
 
     private bool HandleEntityCollision(Entity other, double previousSpeed, out double speedDelta, out double separationDelta) {

@@ -1,3 +1,4 @@
+using System;
 using VintageRails.Behaviors;
 using VintageRails.Rails;
 using Vintagestory.API.Common;
@@ -21,27 +22,37 @@ public static class RailUtil {
             bp.Add(offset);
             track = world.GetBlockBehaviour<BlockBehaviorCartTrack>(bp);
         }
-
-        TrackAnchorData? anchors = null;
         
-        if (track != null) {
-            anchors = track.GetAnchorData();
-
-            var delta = anchors.AnchorDelta;
-            var localPos = pos.RelativeToCenter(bp);//.SubCopy(bp.X, bp.Y, bp.Z);
-            var a = anchors.LowerAnchor - localPos;
-            var cross = delta.Cross(a);
-
-            var distance = cross.Length() / anchors.DeltaL;
-            if (distance > distanceTolerance * track.SnapToleranceMult) {
-                anchors = null;
-                track = null;
-            }
-        }
+        if (track == null) return (null, null, bp);
         
-        return (track, anchors, bp);
+        var anchors = track.GetAnchorData();
+
+        var localPos = pos.RelativeToCenter(bp);
+        
+        var (sideDelta, upDelta) = CalculateDistances(anchors.LowerAnchor, anchors.HigherAnchor, localPos);
+
+        const double sideTolerance = 0.5;
+        const double upTolerance = 0.15;
+        const double downTolerance = 0.4;
+        
+        if (Math.Abs(sideDelta) < sideTolerance && upDelta is >= 0 and < upTolerance or < 0 and > -downTolerance)
+            return (track, anchors, bp);
+
+        return (null, null, bp);
     }
 
+    private static (double sideDistance, double upDistance) CalculateDistances(Vec3d fromPos, Vec3d toPos, Vec3d targetPos)
+    {
+        var posDelta = toPos - fromPos;
+        var dir = posDelta.Normalize();
+        var relativePos = targetPos - fromPos;
+
+        var sideDir = dir.Cross(new(0, 1, 0));
+        var upDir = sideDir.Cross(dir);
+        
+        return (relativePos.Dot(sideDir), relativePos.Dot(upDir));
+    }
+    
     public static T? GetBlockBehaviour<T>(this IWorldAccessor world, BlockPos pos) where T : BlockBehavior{
         var block = world.BlockAccessor.GetBlock(pos);
         
