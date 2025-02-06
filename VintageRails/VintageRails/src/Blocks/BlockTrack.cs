@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using VintageRails.Behaviors;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
@@ -43,18 +44,29 @@ namespace VintageRails.Blocks
         {
             var blockPos = position.AddCopy(toFacing);
             var block = world.BlockAccessor.GetBlock(blockPos);
-            
-            if (block is not BlockTrack) return null;
-
             var opposite = toFacing.Opposite;
-            var facingsFromType = GetFacingsFromType(block.Variant["type"]);
+            
+            var track = block.GetBehavior<BlockBehaviorCartTrack>();
 
-            if (!facingsFromType.Contains(opposite)) return null;
+            if (track != null)
+            {
+                if (!track.EndsDirections.Contains(opposite))
+                    return null;
+            }
+            else
+            {
+                if (block is not BlockTrack)
+                    return null;
+                
+                var facingsFromType = GetFacingsFromType(block.Variant["type"]);
+
+                if (!facingsFromType.Contains(opposite)) return null;
+            }
             
             var railBlock = GetRailBlock(world, "curved_", toFacing, targetFacing);
             return railBlock;
         }
-
+        
         private Block? GetRailBlock(IWorldAccessor world, string prefix, BlockFacing dir0, BlockFacing dir1)
         {
             var block = world.GetBlock(CodeWithParts(prefix + dir0.Code[0] + dir1.Code[0]));

@@ -1,4 +1,4 @@
-namespace VintageRails.Util;
+namespace VintageRails.Utils;
 
 public class Ranged {
 

@@ -1,5 +1,3 @@
-using VintageRails.Util;
-
 namespace VintageRails.Behaviors.Callbacks;
 
 public interface ITrackBlockCollisionResolver : ITrackCollisionResolver {

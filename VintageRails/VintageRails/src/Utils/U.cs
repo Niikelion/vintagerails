@@ -1,6 +1,6 @@
 using Vintagestory.API.MathTools;
 
-namespace VintageRails.Rails;
+namespace VintageRails.Utils;
 
 public static class U {
 

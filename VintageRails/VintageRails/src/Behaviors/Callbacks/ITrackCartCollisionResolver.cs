@@ -1,5 +1,4 @@
 using System;
-using VintageRails.Util;
 
 namespace VintageRails.Behaviors.Callbacks;
 

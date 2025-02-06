@@ -2,13 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using VintageRails.Behaviors.Callbacks;
-using VintageRails.Rails;
-using VintageRails.Util;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
-using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
-using Vintagestory.Server;
 
 namespace VintageRails.Behaviors;
 

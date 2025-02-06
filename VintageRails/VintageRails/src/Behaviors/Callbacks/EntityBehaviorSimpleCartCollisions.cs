@@ -1,6 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using VintageRails.Util;
+using VintageRails.Utils;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
 

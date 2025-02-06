@@ -1,4 +1,4 @@
-using VintageRails.Util;
+using VintageRails.Utils;
 
 namespace VintageRails.Behaviors.Callbacks;
 
