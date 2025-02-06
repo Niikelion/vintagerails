@@ -14,13 +14,19 @@
           "*-raised_ew": 5,
           "*": 0
         },
-        "friction": 0.1
+        "frictionByType": {
+          "*-copper-*": 3,
+          "*-*bronze-*": 1,
+          "*-iron-*": 0.5,
+          "*-meteoriciron-*": 0.4,
+          "*-steel-*": 0.25
+        }
       }
     },
     {
       "name": "vintagerails.OverridePick",
       "properties": {
-        "pickedItem": "vintagerails:vintagerails-flat_ns"
+        "pickedItem": "vintagerails:vintagerails-{wood}-{metal}-flat_ns"
       }
     }
   ],
@@ -31,13 +37,22 @@
   },
   "variantGroups": [
     {
+      code: "wood",
+      states: ["aged"],
+      loadFromProperties: "block/wood"
+    },
+    {
+      code: "metal",
+      states: ["copper", "tinbronze", "bismuthbronze", "blackbronze", "iron", "meteoriciron", "steel"]
+    },
+    {
       "code": "type",
       "states": [ "curved_es", "curved_sw", "curved_wn", "curved_ne", "flat_ns", "flat_we", "raised_ns", "raised_we", "raised_sn", "raised_ew" ]
     }
   ],
   "creativeInventory": {
-    "general": [ "vintagerails-flat_ns" ],
-    "transport": [ "vintagerails-flat_ns" ]
+    "general": [ "vintagerails-{wood}-{metal}-flat_ns" ],
+    "transport": [ "vintagerails-{wood}-{metal}-flat_ns" ]
   },
   "blockMaterial": "Metal",
   "shapeByType": {
@@ -76,10 +91,10 @@
   "lightAbsorption": 0,
   "textures": {
     "metal": {
-      "base": "game:block/metal/plate/steel"
+      "base": "game:block/metal/plate/{metal}"
     },
     "wood": {
-      "base": "game:block/wood/planks/generic"
+      "base": "game:block/wood/planks/{wood}1"
     }
   },
   "selectionBox": {
@@ -91,7 +106,7 @@
     "z2": 1
   },
   "drops": [
-    { "type": "block", "code": "vintagerails:vintagerails-flat_ns" }
+    { "type": "block", "code": "vintagerails:vintagerails-{wood}-{metal}-flat_ns" }
   ],
   "collisionBox": null,
   "guiTransform": {
