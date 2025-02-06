@@ -32,7 +32,7 @@
   ],
   "attributes": {
     "handbook": {
-      "groupBy": [ "vintagerails:vintagerails-*" ]
+      "groupBy": [ "vintagerails:vintagerails-*-{metal}-*" ]
     }
   },
   "variantGroups": [
