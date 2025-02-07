@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using VintageRails.Behaviors.Callbacks;
 using VintageRails.Utils;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
@@ -11,7 +15,7 @@ using Vintagestory.GameContent;
 
 namespace VintageRails.Behaviors;
 
-public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEngineBase, IAttachedInteractions {
+public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEngineBase, IAttachedInteractions, IInfoAttachment {
 
     public const string CurrentFuelTimeAttribute = "fuel.time";
     public const string CurrentFuelTemperatureAttribute = "fuel.temperature";
@@ -24,6 +28,8 @@ public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEn
     private float forceAt1350 = 9;
     private float backwardsForceMul = 0.75f;
     private float animationSpeedMul = 1;
+
+    private WorldInteraction[]? _interactions = null;
     
     public CollectibleBehaviorCombustionCartEngine(CollectibleObject collObj) : base(collObj) {
         
@@ -157,4 +163,35 @@ public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEn
 
     public void OnReceivedClientPacket(ItemSlot itemslot, int slotIndex, Entity onEntity, IServerPlayer player, int packetid, byte[] data, ref EnumHandling handled, Action onRequireSave) { }
     #endregion
+    
+    public WorldInteraction[] GetInteractionHelps(ItemSlot thisSlot, Entity thisEntity) {
+        return GetOrMakeWorldInteractions(thisEntity.World);
+    }
+
+    public void GetInfo(ItemSlot thisSlot, Entity thisEntity, StringBuilder infoText) {
+        var temperature = thisSlot.Itemstack.Attributes.GetOrAddTreeAttribute(EngineTreeAttribute).GetFloat(CurrentTemperatureAttribute);
+        infoText.AppendLine($"{(int)MathF.Round(temperature)}\u00b0C");
+    }
+
+    private WorldInteraction[] GetOrMakeWorldInteractions(IWorldAccessor world) {
+        if (_interactions == null) {
+            var fuels = new List<ItemStack>();
+            foreach (var collectible in world.Collectibles) {
+                var combustible = collectible.CombustibleProps;
+                if (combustible != null && combustible.BurnDuration > 0 && combustible.BurnTemperature > 0) {
+                    fuels.Add(new ItemStack(collectible));
+                }
+            }
+            var interaction = new WorldInteraction();
+            interaction.Itemstacks = fuels.ToArray();
+            interaction.MouseButton = EnumMouseButton.Right;
+            interaction.HotKeyCode = "shift";
+            interaction.ActionLangCode = "vintagerails:combustion-engine-add-fuel";
+            _interactions = new[] {
+                interaction
+            };
+        }
+        return _interactions;
+    }
+    
 }

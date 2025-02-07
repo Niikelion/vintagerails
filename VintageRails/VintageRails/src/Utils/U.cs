@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
@@ -36,6 +38,10 @@ public static class U {
         if (fromTemp >  toTemp)
             dt = -dt;
         return fromTemp + dt;
+    }
+
+    public static T[] GetCollectibleInterfaces<T>(this CollectibleObject collectible) where T : class {
+        return collectible.CollectibleBehaviors.Where(behavior => behavior is T).Cast<T>().ToArray();
     }
     
 }

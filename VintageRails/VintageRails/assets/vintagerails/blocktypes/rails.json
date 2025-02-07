@@ -14,7 +14,7 @@
           "*-raised_ew": 5,
           "*": 0
         },
-        "friction": 0.1
+        "friction": 1
       }
     },
     {
