@@ -24,6 +24,14 @@
       }
     },
     {
+      "name": "vintagerails.TrackVariantProvider",
+      "properties": {
+        "raised": [ "raised_ns", "raised_ew", "raised_sn", "raised_we" ],
+        "curved": [ "curved_ne", "curved_es", "curved_sw", "curved_wn" ],
+        "flat": [ "flat_ns", "flat_we" ]
+      }
+    },
+    {
       "name": "vintagerails.OverridePick",
       "properties": {
         "pickedItem": "vintagerails:vintagerails-{wood}-{metal}-flat_ns"
@@ -37,17 +45,17 @@
   },
   "variantGroups": [
     {
-      code: "wood",
-      states: ["aged"],
-      loadFromProperties: "block/wood"
+      "code": "wood",
+      "states": ["aged"],
+      "loadFromProperties": "block/wood"
     },
     {
-      code: "metal",
-      states: ["copper", "tinbronze", "bismuthbronze", "blackbronze", "iron", "meteoriciron", "steel"]
+      "code": "metal",
+      "states": ["copper", "tinbronze", "bismuthbronze", "blackbronze", "iron", "meteoriciron", "steel"]
     },
     {
       "code": "type",
-      "states": [ "curved_es", "curved_sw", "curved_wn", "curved_ne", "flat_ns", "flat_we", "raised_ns", "raised_we", "raised_sn", "raised_ew" ]
+      "states": [ "curved_es", "curved_sw", "curved_wn", "curved_ne", "flat_ns", "flat_we", "raised_ns", "raised_ew", "raised_sn", "raised_we" ]
     }
   ],
   "creativeInventory": {

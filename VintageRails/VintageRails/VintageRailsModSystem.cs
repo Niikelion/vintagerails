@@ -3,6 +3,7 @@ using VintageRails.Behaviors;
 using VintageRails.Blocks;
 using VintageRails.Entities;
 using VintageRails.Global;
+using VintageRails.Items;
 using VintageRails.Renderer;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -11,14 +12,17 @@ using Vintagestory.API.Server;
 namespace VintageRails
 {
     public class VintageRailsModSystem : ModSystem {
-        public static readonly PhysicsBatch MinecartsBatch = new PhysicsBatch();
+        public static readonly PhysicsBatch MinecartsBatch = new();
         
         public override void Start(ICoreAPI api)
         {
+            api.RegisterItemClass(Mod.Info.ModID + ".ItemTrackWrench", typeof(ItemTrackWrench));
+            
             api.RegisterBlockClass(Mod.Info.ModID + ".Rails", typeof(BlockTrack));
 
             api.RegisterBlockBehaviorClass(Mod.Info.ModID + ".CartTrack", typeof(BlockBehaviorCartTrack));
             api.RegisterBlockBehaviorClass(Mod.Info.ModID + ".OverridePick", typeof(BlockBehaviorOverridePick));
+            api.RegisterBlockBehaviorClass(Mod.Info.ModID + ".TrackVariantProvider", typeof(BlockBehaviorTrackVariantProvider));
             
             api.RegisterEntity(Mod.Info.ModID + ".Cart", typeof(EntityCart));
             api.RegisterEntity(Mod.Info.ModID + ".SeatSup", typeof(EntitySeatInstSupplier));
