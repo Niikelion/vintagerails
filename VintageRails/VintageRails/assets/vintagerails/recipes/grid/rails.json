@@ -1,0 +1,10 @@
+{
+    ingredientPattern: "RPR",
+    "width": 3,
+	"height": 1,
+    ingredients: {
+        "R": { type: "item", code: "rail-part-*", name: "metal" },
+        "P": { type: "item", code: "game:plank-*", name: "wood", quantity: 2 }
+    },
+    output: { type: "block", code: "vintagerails-{wood}-{metal}-flat_ns" }
+}
