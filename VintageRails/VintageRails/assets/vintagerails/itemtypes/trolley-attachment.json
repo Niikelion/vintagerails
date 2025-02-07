@@ -14,18 +14,18 @@
 		}
 	},
     behaviors: [{
-            name: "vintagerails.SimpleEngine",
-            properties: {
-                forwardForce: 10,
-                backwardForce: 7,
-            }
+            name: "vintagerails.CombustionEngine",
+            // properties: {
+            //     forwardForce: 10,
+            //     backwardForce: 7,
+            // }
         },
-        {
-            name: "vintagerails.RClickFuel",
-            properties: {
-                fuelPerClick: 1
-            }
-        }
+        // {
+        //     name: "vintagerails.RClickFuel",
+        //     properties: {
+        //         fuelPerClick: 1
+        //     }
+        // }
     ],
     maxStackSize: 8,
 	creativeinventory: { "general": ["*"], "transport": ["*"] },

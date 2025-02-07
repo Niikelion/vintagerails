@@ -1,9 +1,13 @@
+using System;
 using Vintagestory.API.MathTools;
+using Vintagestory.GameContent;
 
 namespace VintageRails.Utils;
 
 public static class U {
 
+    public static readonly CollectibleBehaviorContainer ContainerHelper = new(null);
+    
     //From PhysicsManager
     public const float PhysicsTickInterval = 0.033333335f * 1f;
 
@@ -21,4 +25,17 @@ public static class U {
         var c = mSelf + mOther;
         return (a + b) / c;
     }
+    
+    //From BlockEntityFirepit
+    public static float ChangeTemperature(float fromTemp, float toTemp, float dt)
+    {
+        float num = Math.Abs(fromTemp - toTemp);
+        dt += dt * (num / 28f);
+        if (num < dt || num < 1.0)
+            return toTemp;
+        if (fromTemp >  toTemp)
+            dt = -dt;
+        return fromTemp + dt;
+    }
+    
 }

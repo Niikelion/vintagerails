@@ -1,0 +1,160 @@
+using System;
+using System.Linq;
+using VintageRails.Utils;
+using Vintagestory.API.Common;
+using Vintagestory.API.Common.Entities;
+using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
+using Vintagestory.API.Server;
+using Vintagestory.API.Util;
+using Vintagestory.GameContent;
+
+namespace VintageRails.Behaviors;
+
+public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEngineBase, IAttachedInteractions {
+
+    public const string CurrentFuelTimeAttribute = "fuel.time";
+    public const string CurrentFuelTemperatureAttribute = "fuel.temperature";
+    public const string CurrentTemperatureAttribute = "temperature";
+
+    private const float minimumTemperature = 100;
+    private const float cokeTemperature = 1350;
+    
+    private float forceAt100 = 3;
+    private float forceAt1350 = 9;
+    private float backwardsForceMul = 0.75f;
+    private float animationSpeedMul = 1;
+    
+    public CollectibleBehaviorCombustionCartEngine(CollectibleObject collObj) : base(collObj) {
+        
+    }
+
+    protected override bool IsWorking(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) {
+        return TemperatureRatio(engineAttributes) > 0;
+    }
+
+    protected override void AfterWork(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) {
+        
+    }
+
+    protected override float GetAnimationSpeed(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, bool isWorking, bool movesBackwards, double dt) {
+        return TemperatureRatio(engineAttributes) * animationSpeedMul;
+    }
+
+    protected override void TickEngine(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) {
+        var entity = rider.entity;
+        var world = entity.World;
+        var pos = entity.Pos.XYZ;
+        
+        TickFuel(world, pos, slot, engineAttributes, dt);
+    }
+
+    protected override double GetCurrentForce(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, bool movesBackwards, double dt) {
+        return GameMath.Lerp(forceAt100, forceAt1350, TemperatureRatio(engineAttributes)) * (movesBackwards ? backwardsForceMul : 1f);
+    }
+
+    private static void TickFuel(IWorldAccessor world, Vec3d pos, ItemSlot slot, ITreeAttribute engineAttributes, double dt) {
+        var burnTime = engineAttributes.GetDouble(CurrentFuelTimeAttribute);
+        
+        if(burnTime <= 0) {
+            IgniteNextFuel(world, pos, slot, engineAttributes, dt);
+            burnTime = engineAttributes.GetDouble(CurrentFuelTimeAttribute);
+        }
+        
+        if (burnTime > 0) {
+            burnTime -= dt;
+        }
+        
+        engineAttributes.SetDouble(CurrentFuelTimeAttribute, burnTime);
+        
+        //20 is a default temperature for a campfire
+        var targetTemperature = 20f;
+        if (burnTime > 0) {
+            targetTemperature = engineAttributes.GetFloat(CurrentFuelTemperatureAttribute);
+        }
+
+        TickTemperature(engineAttributes, targetTemperature, dt);
+        slot.MarkDirty();
+    }
+    
+    /// <summary>
+    /// Does not mark dirty
+    /// </summary>
+    private static float TickTemperature(ITreeAttribute engineAttributes, float targetTemperature, double dt) {
+        var temp = engineAttributes.GetFloat(CurrentTemperatureAttribute);
+        temp = U.ChangeTemperature(temp, targetTemperature, (float)dt);
+        engineAttributes.SetFloat(CurrentTemperatureAttribute, temp);
+        return temp;
+    }
+
+    /// <summary>
+    /// Does not mark dirty
+    /// </summary>
+    public static void IgniteNextFuel(IWorldAccessor world, Vec3d pos, ItemSlot slot, ITreeAttribute engineAttributes, double dt) {
+        var stacks = U.ContainerHelper.GetNonEmptyContents(world, slot.Itemstack);
+        for (int i=0; i<stacks.Length; i++) {
+            var stack = stacks[i];
+            var collectible = stack.Collectible;
+            var combustible = collectible.CombustibleProps;
+
+            if (combustible != null && combustible.BurnTemperature > 0 && combustible.BurnDuration > 0) {
+                engineAttributes.SetDouble(CurrentFuelTimeAttribute, combustible.BurnDuration);
+                engineAttributes.SetFloat(CurrentFuelTemperatureAttribute, combustible.BurnTemperature);
+                if (--stack.StackSize == 0) {
+                    stacks[i] = null;
+                }
+                break;
+            }
+            else {
+                world.SpawnItemEntity(stack, pos);
+                stacks[i] = null;
+            }
+        }
+        U.ContainerHelper.SetContents(slot.Itemstack, stacks);
+    }
+
+    public static float TemperatureRatio(ITreeAttribute engineAttributes) {
+        return TemperatureRatio(engineAttributes.GetFloat(CurrentTemperatureAttribute));
+    }
+    
+    public static float TemperatureRatio(float temperature) {
+        return MathF.Max((temperature - minimumTemperature) / (cokeTemperature - minimumTemperature), 0f);
+    }
+
+    #region Attached Interactions
+    public bool OnTryAttach(ItemSlot itemslot, int slotIndex, Entity toEntity) {
+        return true;
+    }
+
+    public bool OnTryDetach(ItemSlot itemslot, int slotIndex, Entity toEntity) {
+        return true; 
+    }
+
+    public void OnInteract(ItemSlot thisItemSlot, int slotIndex, Entity onEntity, EntityAgent byEntity, Vec3d hitPosition, EnumInteractMode mode, ref EnumHandling handled, Action onRequireSave) {
+        if (byEntity.World.Side == EnumAppSide.Server) {
+            if (byEntity.Controls.CtrlKey || !byEntity.Controls.ShiftKey) {
+                return;
+            }
+            
+            var activeSlot = byEntity.ActiveHandItemSlot;
+            var handStack = activeSlot.Itemstack;
+            if (handStack != null) {
+                var thisStack = thisItemSlot.Itemstack;
+                
+                var content = U.ContainerHelper.GetNonEmptyContents(onEntity.World, thisStack);
+                U.ContainerHelper.SetContents(thisStack, content.Append(handStack));
+                thisItemSlot.MarkDirty();
+                activeSlot.Itemstack = null;
+                activeSlot.MarkDirty();
+                handled = EnumHandling.PreventSubsequent;
+            }
+        }
+    }
+
+    public void OnEntityDespawn(ItemSlot itemslot, int slotIndex, Entity onEntity, EntityDespawnData despawn) { }
+
+    public void OnEntityDeath(ItemSlot itemslot, int slotIndex, Entity onEntity, DamageSource damageSourceForDeath) { }
+
+    public void OnReceivedClientPacket(ItemSlot itemslot, int slotIndex, Entity onEntity, IServerPlayer player, int packetid, byte[] data, ref EnumHandling handled, Action onRequireSave) { }
+    #endregion
+}

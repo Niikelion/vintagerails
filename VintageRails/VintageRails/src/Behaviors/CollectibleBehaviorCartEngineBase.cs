@@ -30,6 +30,7 @@ public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, I
         if (rider is { WasOnTrack: true }) {
             var engineAttributes = self.Itemstack.Attributes.GetOrAddTreeAttribute(EngineTreeAttribute);
 
+            TickEngine(self, rider, engineAttributes, dt);
             var isWorking = IsWorking(self, rider, engineAttributes, dt);
             var movesBack = false;
             if (isWorking) {
@@ -64,6 +65,8 @@ public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, I
         return engineAttributes.GetBool(MoveBackwardsAttribute, false);
     }
 
+    protected virtual void TickEngine(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) { }
+    
     protected abstract bool IsWorking(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt);
 
     protected abstract void AfterWork(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt);
