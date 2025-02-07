@@ -12,7 +12,7 @@
         "wearableSlots": [
         {
           "code": "Seat",
-          "forCategoryCodes": ["basket", "seat", "chest", "crate"],
+          "forCategoryCodes": ["basket", "seat", "chest", "crate", "cart-trolley"],
           "attachmentPointCode": "SeatAP",
           "emptyInteractPassThrough": true,
           "stepParentTo": {
@@ -48,6 +48,7 @@
     "behaviors": [
       { "code": "vintagerails.TrackRider" },
       { "code": "vintagerails.TrackCollision" },
+      { "code": "vintagerails.TickAttachments" },
       { "code": "repulseagents", "movable": true },
       { "code": "passivephysics" },
       { "code": "selectionboxes" },
