@@ -91,7 +91,7 @@ public class ItemTrackWrench: Item
 
     private static void CycleSmart(BlockSelection block, bool reverse, BlockBehaviorTrackVariantProvider variantProvider, IWorldAccessor world)
     {
-        var variantsSet = new HashSet<string>();
+        var variantsSet = new HashSet<AssetLocation>();
         var allVariants = new List<(Block block, int score)>();
 
         var neighbours = new List<(BlockPos pos, BlockBehaviorCartTrack track)>();
@@ -115,7 +115,7 @@ public class ItemTrackWrench: Item
         foreach (string variant in variantProvider.RaisedTypes)
             AddIfNotPresent(variant);
         
-        string currentVariant = block.Block.CodeWithParts(variantProvider.CurrentType);
+        var currentVariant = variantProvider.CurrentType;
 
         int currentIndex = allVariants.IndexOf(v => v.block.Code == currentVariant);
         int maxScore = allVariants.Max(v => v.score);
@@ -135,14 +135,12 @@ public class ItemTrackWrench: Item
         
         return;
 
-        void AddIfNotPresent(string variant)
+        void AddIfNotPresent(AssetLocation variant)
         {
             if (variantsSet.Contains(variant))
                 return;
 
-            var variantCode = block.Block.CodeWithParts(variant);
-            
-            var variantBlock = world.BlockAccessor.GetBlock(variantCode);
+            var variantBlock = world.BlockAccessor.GetBlock(variant);
 
             var variantTrack = variantBlock?.GetBehavior<BlockBehaviorCartTrack>();
             
@@ -170,15 +168,14 @@ public class ItemTrackWrench: Item
     private static void CycleRaised(BlockSelection block, bool reverse, BlockBehaviorTrackVariantProvider variantProvider, IWorldAccessor world) =>
         CycleVariants(block, world, reverse, variantProvider.RaisedTypes, variantProvider.CurrentType);
 
-    private static void CycleVariants(BlockSelection block, IWorldAccessor world, bool reverse, string[] availableVariants, string currentVariant)
+    private static void CycleVariants(BlockSelection block, IWorldAccessor world, bool reverse, AssetLocation[] availableVariants, AssetLocation currentVariant)
     {
         int currentVariantId = availableVariants.IndexOf(currentVariant);
         int nextVariantId = (currentVariantId + (reverse ? -1 : 1) + availableVariants.Length) % availableVariants.Length;
         
-        string nextVariant = availableVariants[nextVariantId];
-        string nextCode = world.BlockAccessor.GetBlock(block.Position).CodeWithParts(nextVariant);
+        var nextVariant = availableVariants[nextVariantId];
         
-        var nextBlock = world.GetBlock(nextCode);
+        var nextBlock = world.GetBlock(nextVariant);
         
         world.BlockAccessor.SetBlock(nextBlock.BlockId, block.Position);
     }

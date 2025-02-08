@@ -7,11 +7,11 @@ namespace VintageRails.Behaviors;
 
 public class BlockBehaviorTrackVariantProvider: BlockBehavior
 {
-    public string[] RaisedTypes { get; private set; } = Array.Empty<string>();
-    public string[] CurvedTypes { get; private set; } = Array.Empty<string>();
-    public string[] FlatTypes { get; private set; } = Array.Empty<string>();
+    public AssetLocation[] RaisedTypes { get; private set; } = Array.Empty<AssetLocation>();
+    public AssetLocation[] CurvedTypes { get; private set; } = Array.Empty<AssetLocation>();
+    public AssetLocation[] FlatTypes { get; private set; } = Array.Empty<AssetLocation>();
 
-    public virtual string CurrentType => block.LastCodePart();
+    public AssetLocation CurrentType => block.Code;
     
     public BlockBehaviorTrackVariantProvider(Block block) : base(block) {}
 
@@ -19,8 +19,10 @@ public class BlockBehaviorTrackVariantProvider: BlockBehavior
     {
         base.Initialize(properties);
         
-        RaisedTypes = properties["raised"].AsArray().Select(i => i.AsString()).ToArray();
-        CurvedTypes = properties["curved"].AsArray().Select(i => i.AsString()).ToArray();
-        FlatTypes = properties["flat"].AsArray().Select(i => i.AsString()).ToArray();
+        RaisedTypes = properties["raised"].AsArray().Select(i => ResolveVariantName(i.AsString())).ToArray();
+        CurvedTypes = properties["curved"].AsArray().Select(i => ResolveVariantName(i.AsString())).ToArray();
+        FlatTypes = properties["flat"].AsArray().Select(i => ResolveVariantName(i.AsString())).ToArray();
     }
+    
+    protected virtual AssetLocation ResolveVariantName(string variantName) => block.CodeWithVariant("type", variantName);
 }
