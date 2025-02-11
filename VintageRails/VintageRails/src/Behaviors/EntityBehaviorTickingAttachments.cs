@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using VintageRails.Behaviors.Callbacks;
-using Vintagestory.API.Common;
+using VintageRails.Utils;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.GameContent;
 
@@ -38,8 +38,8 @@ public class EntityBehaviorTickingAttachments : EntityBehavior, IOrderedPhysicsT
 
             var collectible = stack.Collectible;
 
-            var ticker = collectible.GetCollectibleInterface<ITickAttachment>();
-            if (ticker != null) {
+            var tickers = collectible.GetCollectibleInterfaces<ITickAttachment>();
+            foreach (var ticker in tickers) {
                 ticker.OnTick(slot, entity, dt);
             }
         }

@@ -27,25 +27,29 @@ public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, I
 
     public virtual void OnTick(ItemSlot self, Entity owner, double dt) {
         var rider = owner.GetBehavior<TrackRiderEntityBehavior>();
-        if (rider is { WasOnTrack: true }) {
+        if (rider is not null) {
             var engineAttributes = self.Itemstack.Attributes.GetOrAddTreeAttribute(EngineTreeAttribute);
 
             TickEngine(self, rider, engineAttributes, dt);
-            var isWorking = IsWorking(self, rider, engineAttributes, dt);
-            var movesBack = false;
-            if (isWorking) {
-                movesBack = ShouldMoveBackwards(self, rider, engineAttributes, dt);
-                var force = GetCurrentForce(self, rider, engineAttributes, movesBack, dt);
-                force *= movesBack ? -1 : 1;
+            if (rider.WasOnTrack) {
+                var isWorking = IsWorking(self, rider, engineAttributes, dt);
+                var movesBack = false;
+                if (isWorking) {
+                    movesBack = ShouldMoveBackwards(self, rider, engineAttributes, dt);
+                    var force = GetCurrentForce(self, rider, engineAttributes, movesBack, dt);
+                    force *= movesBack ? -1 : 1;
 
-                rider.Speed += rider.Facing * force * dt;
+                    rider.Speed += rider.Facing * force * dt;
 
-                AfterWork(self, rider, engineAttributes, dt);
+                    AfterWork(self, rider, engineAttributes, dt);
+                }
+
+                var animSpeed = GetAnimationSpeed(self, rider, engineAttributes, isWorking, movesBack, dt);
+                rider.EngineAnimationSpeed = animSpeed;
             }
-
-            var animSpeed = GetAnimationSpeed(self, rider, engineAttributes, isWorking, movesBack, dt);
-            rider.EngineAnimationSpeed = animSpeed;
         }
+        //Does nothing because stupid
+        self.MarkDirty();
     }
 
     public void OnAttached(ItemSlot itemslot, int slotIndex, Entity toEntity, EntityAgent byEntity) {
