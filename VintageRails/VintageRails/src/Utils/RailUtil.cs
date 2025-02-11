@@ -83,6 +83,32 @@ public static class RailUtil {
         return (nextTrack, nextTrackPos, nextAnchors?.ClosestAnchor(anchor.offset.AddCopy(bp - nextTrackPos)) ?? 1);
     }
 
+    public static bool CanConnect((BlockPos pos, BlockBehaviorCartTrack track) firstBlock,
+        (BlockPos pos, BlockBehaviorCartTrack track) secondBlock)
+    {
+        var firstBlockAnchorData = firstBlock.track.AnchorData;
+        var secondBlockAnchorData = secondBlock.track.AnchorData;
+
+        var firstBlockPos = firstBlock.pos.AsVec3i;
+        var secondBlockPos = secondBlock.pos.AsVec3i;
+
+        int secondBlockClosestAnchorId = secondBlockAnchorData.ClosestAnchor((firstBlockPos - secondBlockPos).AsVec3d());
+        var secondBlockClosestAnchor = secondBlockAnchorData[secondBlockClosestAnchorId];
+        var secondTargetPos = secondBlock.pos.AddCopy(secondBlockClosestAnchor.blockOffset);
+
+        if (secondTargetPos.AsVec3i != firstBlockPos && (secondTargetPos.AddCopy(BlockFacing.DOWN.Normali).AsVec3i != firstBlockPos || secondBlockClosestAnchor.offset.Y > 0))
+            return false;
+
+        int firstBlockClosestAnchorId = firstBlockAnchorData.ClosestAnchor((secondBlockPos - firstBlockPos).AsVec3d());
+        var firstBlockClosestAnchor = firstBlockAnchorData[firstBlockClosestAnchorId];
+        var firstTargetPos = firstBlock.pos.AddCopy(firstBlockClosestAnchor.blockOffset);
+
+        if (firstTargetPos.AsVec3i != secondBlockPos && (firstTargetPos.AddCopy(BlockFacing.DOWN.Normali).AsVec3i != secondBlockPos || firstBlockClosestAnchor.offset.Y > 0))
+            return false;
+
+        return true;
+    }
+
     public static BlockBehaviorCartTrack? GetTrackAtPos(this IWorldAccessor world, BlockPos pos) =>
         world.GetBlockBehaviour<BlockBehaviorCartTrack>(pos);
 }
