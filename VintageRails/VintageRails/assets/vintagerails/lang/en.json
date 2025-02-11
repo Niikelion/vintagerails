@@ -11,4 +11,10 @@
   "block-vintagerails-raised_ew": "Rails raised",
   
   "combustion-engine-add-fuel": "Add fuel"
+  "block-vintagerails-raised_ew": "Rails raised",
+  "mode-cart-wrench-smart": "Smart Mode",
+  "mode-cart-wrench-connect": "Connect/Disconnect Mode",
+  "mode-cart-wrench-straight": "Cycle Straight Rails",
+  "mode-cart-wrench-curved": "Cycle Curved Rails",
+  "mode-cart-wrench-raised": "Cycle Raised Rails"
 }
