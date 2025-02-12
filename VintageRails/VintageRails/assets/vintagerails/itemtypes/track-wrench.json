@@ -44,7 +44,7 @@
     }
   },
   tool: "wrench",
-  damagedby: ["blockbreaking", "attacking"],
+  damagedby: ["blockbreaking", "attacking"], //TODO disable damage
   heldTpHitAnimation: "smithing",
   tooltierbytype: {
     "*-copper": 2,

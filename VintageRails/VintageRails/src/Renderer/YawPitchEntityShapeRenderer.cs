@@ -86,8 +86,8 @@ public class YawPitchEntityShapeRenderer : EntityShapeRenderer {
 
         //Was XYZ
         Quaterniond.RotateY(quat, quat, (fuglyHack ? 0 : yaw));
-        Quaterniond.RotateZ(quat, quat, entity.Pos.Roll + /*stepPitch +*/ rotZ * GameMath.DEG2RAD + (fuglyHack ? GameMath.PIHALF * (climbonfacing == BlockFacing.WEST ? -1 : 1) : 0));
         Quaterniond.RotateX(quat, quat, bodyPitch + rotX * GameMath.DEG2RAD + (fuglyHack ? yaw * sign : 0));
+        Quaterniond.RotateZ(quat, quat, entity.Pos.Roll + /*stepPitch +*/ rotZ * GameMath.DEG2RAD + (fuglyHack ? GameMath.PIHALF * (climbonfacing == BlockFacing.WEST ? -1 : 1) : 0));
         
         // Quaterniond.RotateX(quat, quat, xangle);
         // Quaterniond.RotateY(quat, quat, yangle);

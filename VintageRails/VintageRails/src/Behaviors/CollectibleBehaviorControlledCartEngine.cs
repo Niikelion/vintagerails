@@ -12,16 +12,13 @@ public class CollectibleBehaviorControlledCartEngine : CollectibleBehaviorCartEn
     }
 
     protected override bool IsWorking(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) {
-        var seatable = rider.entity.GetBehavior<EntityBehaviorSeatable>();
-        var slotId = slot.Inventory.GetSlotId(slot);
-        var seat = seatable.Seats.FirstOrDefault(seat => seat.SeatId == "attachableseat-" + slotId);
-        if (seat != null) {
-            var controls = seat.Controls;
-            if (controls != null) {
-                return controls.Backward || controls.Forward;
-            }
-        }
-        return false;
+        var controls = GetSeatsControls(slot, rider);
+        return controls != null && (controls.Backward || controls.Forward);
+    }
+
+    protected override bool ShouldMoveBackwards(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) {
+        var controls = GetSeatsControls(slot, rider);
+        return controls is { Backward: true, Forward: false };
     }
 
     protected override void AfterWork(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) {
@@ -31,5 +28,17 @@ public class CollectibleBehaviorControlledCartEngine : CollectibleBehaviorCartEn
     protected override float GetAnimationSpeed(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, bool isWorking, bool movesBackwards, double dt) {
         return (float)rider.Speed;
     }
-    
+
+    protected EntityControls? GetSeatsControls(ItemSlot slot, TrackRiderEntityBehavior rider) {
+        var seatable = rider.entity.GetBehavior<EntityBehaviorSeatable>();
+        var slotId = slot.Inventory.GetSlotId(slot);
+        var seat = seatable.Seats.FirstOrDefault(seat => seat.SeatId == "attachableseat-" + slotId);
+        if (seat != null) {
+            var controls = seat.Controls;
+            if (controls != null) {
+                return controls;
+            }
+        }
+        return null;
+    }
 }

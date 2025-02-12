@@ -76,6 +76,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
     public TrackAnchorData? LastAnchorData { get; private set; }
 
     private EntityBehaviorPassivePhysics? _physics;
+    private EntityBehaviorSeatable? _seats;
     private EntityPartitioning _partitionUtil;
     
     private BlockPos? PreviousBp {
@@ -134,6 +135,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         }
         
         _physics = entity.GetBehavior<EntityBehaviorPassivePhysics>();
+        _seats = entity.GetBehavior<EntityBehaviorSeatable>();
     }
 
     public override string PropertyName() => "vrails.track_rider";
@@ -192,6 +194,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
 
         var y = -(float)(Math.Atan2(adn2.Z * s, adn2.X * s) - Math.PI / 2.0);
         var p = 0f;
+        //Model has -X Forward
         var r = (float)(Math.Acos(adn2.Dot(new(0, 1, 0))) - Math.PI / 2.0) * s;
 
         _nextPos.SetAngles(r, y, p);
@@ -200,8 +203,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         Speed = speed;
     }
     
-    void IOrderedPhysicsTickBehavior.AfterTick(double dt)
-    {
+    void IOrderedPhysicsTickBehavior.AfterTick(double dt) {
         PreviousSpeed = Speed;
         if (!WasOnTrack) return;
         
@@ -210,8 +212,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         entity.Pos.SetFrom(entity.ServerPos);
     }
     
-    private void ApplyCollisionsAndPushing(ref double speed)
-    {
+    private void ApplyCollisionsAndPushing(ref double speed) {
         var pos = entity.Pos.XYZ;
         var radius = Math.Max(
             Math.Max(
@@ -234,6 +235,10 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         {
             //Stop iteration
             return false;
+        }
+
+        if (_seats != null && _seats.IsMountedBy(e)) {
+            return true;
         }
         
         var box1 = entity.SelectionBox;

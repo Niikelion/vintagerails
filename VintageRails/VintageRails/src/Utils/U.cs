@@ -29,8 +29,7 @@ public static class U {
     }
     
     //From BlockEntityFirepit
-    public static float ChangeTemperature(float fromTemp, float toTemp, float dt)
-    {
+    public static float ChangeTemperature(float fromTemp, float toTemp, float dt) {
         float num = Math.Abs(fromTemp - toTemp);
         dt += dt * (num / 28f);
         if (num < dt || num < 1.0)

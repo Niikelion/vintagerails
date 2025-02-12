@@ -1,12 +1,15 @@
+using System;
 using VintageRails.Behaviors.Callbacks;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
+using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 
 namespace VintageRails.Behaviors;
 
-public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, ITickAttachment, IAttachedListener {
+public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, ITickAttachment, IAttachedInteractions {
 
     public const string EngineTreeAttribute = "vrails.engine";
     public const string MoveBackwardsAttribute = "movesBack";
@@ -31,9 +34,13 @@ public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, I
             var engineAttributes = self.Itemstack.Attributes.GetOrAddTreeAttribute(EngineTreeAttribute);
 
             TickEngine(self, rider, engineAttributes, dt);
+
+            bool isWorking = false;
+            bool movesBack = false;
+            
             if (rider.WasOnTrack) {
-                var isWorking = IsWorking(self, rider, engineAttributes, dt);
-                var movesBack = false;
+                isWorking = IsWorking(self, rider, engineAttributes, dt);
+                movesBack = false;
                 if (isWorking) {
                     movesBack = ShouldMoveBackwards(self, rider, engineAttributes, dt);
                     var force = GetCurrentForce(self, rider, engineAttributes, movesBack, dt);
@@ -44,21 +51,12 @@ public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, I
                     AfterWork(self, rider, engineAttributes, dt);
                 }
 
-                var animSpeed = GetAnimationSpeed(self, rider, engineAttributes, isWorking, movesBack, dt);
-                rider.EngineAnimationSpeed = animSpeed;
             }
+            var animSpeed = GetAnimationSpeed(self, rider, engineAttributes, isWorking, movesBack, dt);
+            rider.EngineAnimationSpeed = animSpeed;
         }
         //Does nothing because stupid
         self.MarkDirty();
-    }
-
-    public void OnAttached(ItemSlot itemslot, int slotIndex, Entity toEntity, EntityAgent byEntity) {
-        //Dunno
-    }
-
-    public void OnDetached(ItemSlot itemslot, int slotIndex, Entity fromEntity, EntityAgent byEntity) {
-        //Cleanup
-        itemslot.Itemstack.Attributes.RemoveAttribute(EngineTreeAttribute);
     }
 
     protected virtual double GetCurrentForce(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, bool movesBackwards, double dt) {
@@ -77,4 +75,36 @@ public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, I
 
     protected abstract float GetAnimationSpeed(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, bool isWorking, bool movesBackwards, double dt);
 
+    #region Attached Interactions
+    public virtual void OnAttached(ItemSlot itemslot, int slotIndex, Entity toEntity, EntityAgent byEntity) {
+        //Dunno
+    }
+
+    public virtual void OnDetached(ItemSlot itemslot, int slotIndex, Entity fromEntity, EntityAgent byEntity) {
+        //Cleanup
+    }
+    
+    public virtual bool OnTryAttach(ItemSlot itemslot, int slotIndex, Entity toEntity) {
+        return true;
+    }
+
+    public virtual bool OnTryDetach(ItemSlot itemslot, int slotIndex, Entity toEntity) {
+        itemslot.Itemstack.Attributes.RemoveAttribute(EngineTreeAttribute);
+        return true;
+    }
+
+    public virtual void OnInteract(ItemSlot itemslot, int slotIndex, Entity onEntity, EntityAgent byEntity, Vec3d hitPosition,
+        EnumInteractMode mode, ref EnumHandling handled, Action onRequireSave) {
+    }
+
+    public virtual void OnEntityDespawn(ItemSlot itemslot, int slotIndex, Entity onEntity, EntityDespawnData despawn) {
+    }
+
+    public virtual void OnEntityDeath(ItemSlot itemslot, int slotIndex, Entity onEntity, DamageSource damageSourceForDeath) {
+    }
+
+    public virtual void OnReceivedClientPacket(ItemSlot itemslot, int slotIndex, Entity onEntity, IServerPlayer player, int packetid,
+        byte[] data, ref EnumHandling handled, Action onRequireSave) {
+    }
+    #endregion
 }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using VintageRails.Behaviors.Callbacks;
 using VintageRails.Utils;
@@ -9,23 +8,22 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
-using Vintagestory.API.Server;
 using Vintagestory.API.Util;
 using Vintagestory.GameContent;
 
 namespace VintageRails.Behaviors;
 
-public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEngineBase, IAttachedInteractions, IInfoAttachment {
+public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEngineBase, IInfoAttachment {
 
     public const string CurrentFuelTimeAttribute = "fuel.time";
     public const string CurrentFuelTemperatureAttribute = "fuel.temperature";
     public const string CurrentTemperatureAttribute = "temperature";
 
-    private const float minimumTemperature = 100;
-    private const float cokeTemperature = 1350;
+    private float minimumTemperature = 100;
+    private float markerTemperature = 1350;
     
-    private float forceAt100 = 3;
-    private float forceAt1350 = 9;
+    private float forceAtMinimum = 3;
+    private float forceAtMarker = 9;
     private float backwardsForceMul = 0.75f;
     private float animationSpeedMul = 1;
 
@@ -33,6 +31,15 @@ public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEn
     
     public CollectibleBehaviorCombustionCartEngine(CollectibleObject collObj) : base(collObj) {
         
+    }
+
+    public override void Initialize(JsonObject properties) {
+        base.Initialize(properties);
+        forceAtMinimum = properties["forceAtMin"].AsFloat();
+        forceAtMarker = properties["forceAtMark"].AsFloat();
+        minimumTemperature = properties["minimumTemperature"].AsFloat(100f);
+        markerTemperature = properties["markerTemperature"].AsFloat(1350); // Coke burning temperature
+        backwardsForceMul = properties["backwardsForceMul"].AsFloat(1f);
     }
 
     protected override bool IsWorking(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) {
@@ -56,7 +63,7 @@ public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEn
     }
 
     protected override double GetCurrentForce(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, bool movesBackwards, double dt) {
-        return GameMath.Lerp(forceAt100, forceAt1350, TemperatureRatio(engineAttributes)) * (movesBackwards ? backwardsForceMul : 1f);
+        return GameMath.Lerp(forceAtMinimum, forceAtMarker, TemperatureRatio(engineAttributes)) * (movesBackwards ? backwardsForceMul : 1f);
     }
 
     private static void TickFuel(IWorldAccessor world, Vec3d pos, ItemSlot slot, ITreeAttribute engineAttributes, double dt) {
@@ -119,24 +126,26 @@ public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEn
         U.ContainerHelper.SetContents(slot.Itemstack, stacks);
     }
 
-    public static float TemperatureRatio(ITreeAttribute engineAttributes) {
+    public float TemperatureRatio(ITreeAttribute engineAttributes) {
         return TemperatureRatio(engineAttributes.GetFloat(CurrentTemperatureAttribute));
     }
     
-    public static float TemperatureRatio(float temperature) {
-        return MathF.Max((temperature - minimumTemperature) / (cokeTemperature - minimumTemperature), 0f);
+    public float TemperatureRatio(float temperature) {
+        return MathF.Max((temperature - minimumTemperature) / (markerTemperature - minimumTemperature), 0f);
     }
 
     #region Attached Interactions
-    public bool OnTryAttach(ItemSlot itemslot, int slotIndex, Entity toEntity) {
-        return true;
+    public override bool OnTryDetach(ItemSlot slot, int slotIndex, Entity toEntity) {
+        var world = toEntity.World;
+        var pos = toEntity.SidedPos.XYZ.AsBlockPos;
+        foreach (var content in U.ContainerHelper.GetNonEmptyContents(world, slot.Itemstack)) {
+            world.SpawnItemEntity(content, pos);
+        }
+        slot.Itemstack.Attributes.RemoveAttribute("contents");
+        return base.OnTryDetach(slot, slotIndex, toEntity); 
     }
 
-    public bool OnTryDetach(ItemSlot itemslot, int slotIndex, Entity toEntity) {
-        return true; 
-    }
-
-    public void OnInteract(ItemSlot thisItemSlot, int slotIndex, Entity onEntity, EntityAgent byEntity, Vec3d hitPosition, EnumInteractMode mode, ref EnumHandling handled, Action onRequireSave) {
+    public override void OnInteract(ItemSlot thisItemSlot, int slotIndex, Entity onEntity, EntityAgent byEntity, Vec3d hitPosition, EnumInteractMode mode, ref EnumHandling handled, Action onRequireSave) {
         if (byEntity.World.Side == EnumAppSide.Server) {
             if (byEntity.Controls.CtrlKey || !byEntity.Controls.ShiftKey) {
                 return;
@@ -156,14 +165,8 @@ public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEn
             }
         }
     }
-
-    public void OnEntityDespawn(ItemSlot itemslot, int slotIndex, Entity onEntity, EntityDespawnData despawn) { }
-
-    public void OnEntityDeath(ItemSlot itemslot, int slotIndex, Entity onEntity, DamageSource damageSourceForDeath) { }
-
-    public void OnReceivedClientPacket(ItemSlot itemslot, int slotIndex, Entity onEntity, IServerPlayer player, int packetid, byte[] data, ref EnumHandling handled, Action onRequireSave) { }
     #endregion
-    
+
     public WorldInteraction[] GetInteractionHelps(ItemSlot thisSlot, Entity thisEntity) {
         return GetOrMakeWorldInteractions(thisEntity.World);
     }
