@@ -13,6 +13,7 @@ public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, I
 
     public const string EngineTreeAttribute = "vrails.engine";
     public const string MoveBackwardsAttribute = "movesBack";
+    public const string EnabledAttribute = "enabled";
     
     private double forwardForce;
     private double backwardForce;
@@ -68,13 +69,28 @@ public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, I
     }
 
     protected virtual void TickEngine(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) { }
-    
-    protected abstract bool IsWorking(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt);
+
+    protected virtual bool IsWorking(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) {
+        return IsEnabled(engineAttributes);
+    }
 
     protected abstract void AfterWork(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt);
 
     protected abstract float GetAnimationSpeed(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, bool isWorking, bool movesBackwards, double dt);
 
+    public static bool IsEnabled(ITreeAttribute engineAttributes) {
+        return engineAttributes.GetBool(EnabledAttribute);
+    }
+
+    public static void ToggleEnabled(ITreeAttribute engineAttributes) {
+        SetEnabled(engineAttributes, !IsEnabled(engineAttributes));
+    }
+    
+    public static void SetEnabled(ITreeAttribute engineAttributes, bool enabled) {
+        engineAttributes.SetBool(EnabledAttribute, enabled);
+    }
+
+    
     #region Attached Interactions
     public virtual void OnAttached(ItemSlot itemslot, int slotIndex, Entity toEntity, EntityAgent byEntity) {
         //Dunno
@@ -93,8 +109,16 @@ public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, I
         return true;
     }
 
-    public virtual void OnInteract(ItemSlot itemslot, int slotIndex, Entity onEntity, EntityAgent byEntity, Vec3d hitPosition,
-        EnumInteractMode mode, ref EnumHandling handled, Action onRequireSave) {
+    public virtual void OnInteract(ItemSlot itemslot, int slotIndex, Entity onEntity, EntityAgent byEntity, Vec3d hitPosition, EnumInteractMode mode, ref EnumHandling handled, Action onRequireSave) {
+        if (onEntity.World.Side == EnumAppSide.Server && mode == EnumInteractMode.Interact) {
+            var controls = byEntity.Controls;
+            if (controls.ShiftKey || controls.CtrlKey) {
+                return;
+            }
+            
+            var attribs = itemslot.Itemstack.Attributes.GetOrAddTreeAttribute(EngineTreeAttribute);
+            ToggleEnabled(attribs);
+        }
     }
 
     public virtual void OnEntityDespawn(ItemSlot itemslot, int slotIndex, Entity onEntity, EntityDespawnData despawn) {

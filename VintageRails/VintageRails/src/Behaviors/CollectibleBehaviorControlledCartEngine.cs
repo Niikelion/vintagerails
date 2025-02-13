@@ -13,7 +13,7 @@ public class CollectibleBehaviorControlledCartEngine : CollectibleBehaviorCartEn
 
     protected override bool IsWorking(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) {
         var controls = GetSeatsControls(slot, rider);
-        return controls != null && (controls.Backward || controls.Forward);
+        return controls != null && (controls.Backward || controls.Forward); //No call to base since we don't need this tobe affected by disabling
     }
 
     protected override bool ShouldMoveBackwards(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) {

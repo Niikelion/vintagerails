@@ -9,7 +9,6 @@ using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
-using Vintagestory.GameContent;
 
 namespace VintageRails.Behaviors;
 
@@ -69,7 +68,7 @@ public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEn
     private static void TickFuel(IWorldAccessor world, Vec3d pos, ItemSlot slot, ITreeAttribute engineAttributes, double dt) {
         var burnTime = engineAttributes.GetDouble(CurrentFuelTimeAttribute);
         
-        if(burnTime <= 0) {
+        if(burnTime <= 0 && IsEnabled(engineAttributes)) {
             IgniteNextFuel(world, pos, slot, engineAttributes, dt);
             burnTime = engineAttributes.GetDouble(CurrentFuelTimeAttribute);
         }
@@ -147,7 +146,8 @@ public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEn
 
     public override void OnInteract(ItemSlot thisItemSlot, int slotIndex, Entity onEntity, EntityAgent byEntity, Vec3d hitPosition, EnumInteractMode mode, ref EnumHandling handled, Action onRequireSave) {
         if (byEntity.World.Side == EnumAppSide.Server) {
-            if (byEntity.Controls.CtrlKey || !byEntity.Controls.ShiftKey) {
+            if (mode != EnumInteractMode.Interact || byEntity.Controls.CtrlKey || !byEntity.Controls.ShiftKey) {
+                base.OnInteract(thisItemSlot, slotIndex, onEntity, byEntity, hitPosition, mode, ref handled, onRequireSave);
                 return;
             }
             
@@ -163,6 +163,9 @@ public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEn
                 activeSlot.MarkDirty();
                 handled = EnumHandling.PreventSubsequent;
             }
+        }
+        else {
+            base.OnInteract(thisItemSlot, slotIndex, onEntity, byEntity, hitPosition, mode, ref handled, onRequireSave);
         }
     }
     #endregion

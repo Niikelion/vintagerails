@@ -13,7 +13,7 @@ public class CollectibleBehaviorSimpleCartEngine : CollectibleBehaviorCartEngine
     }
 
     protected override bool IsWorking(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) {
-        return engineAttributes.GetDouble(FuelTimeAttribute) > 0;
+        return base.IsWorking(slot, rider, engineAttributes, dt) && engineAttributes.GetDouble(FuelTimeAttribute) > 0;
     }
 
     protected override void AfterWork(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) {
