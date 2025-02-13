@@ -42,7 +42,7 @@ public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEn
     }
 
     protected override bool IsWorking(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) {
-        return TemperatureRatio(engineAttributes) > 0;
+        return base.IsWorking(slot, rider, engineAttributes, dt) && TemperatureRatio(engineAttributes) > 0;
     }
 
     protected override void AfterWork(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) {
@@ -59,6 +59,61 @@ public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEn
         var pos = entity.Pos.XYZ;
         
         TickFuel(world, pos, slot, engineAttributes, dt);
+        if (IsEnabled(engineAttributes)) {
+            TickParticles(world, pos, slot, engineAttributes, dt);
+        }
+    }
+
+    private void TickParticles(IWorldAccessor world, Vec3d pos, ItemSlot slot, ITreeAttribute engineAttributes, double dt) {
+        var fuelTime = engineAttributes.GetDouble(CurrentFuelTimeAttribute);
+        var temperature = engineAttributes.GetFloat(CurrentTemperatureAttribute);
+
+        var time = engineAttributes.GetDouble("particleTimer") + dt;
+        
+        if (fuelTime > 0 || temperature > 100) {
+            if (time > 0.1f) {
+                SpawnParticlesWorking(world, pos, temperature);
+                time = 0;
+            }
+        }
+        else {
+            if (time > 3f) {
+                SpawnParticlesIdle(world, pos);
+                time = 0;
+            }
+        }
+        
+        engineAttributes.SetDouble("particleTimer", time);
+    }
+
+    private void SpawnParticlesIdle(IWorldAccessor world, Vec3d pos) {
+        var blue = ColorUtil.ToRgba(50, 20, 30, 255);
+        var particles = new SimpleParticleProperties {
+            ParticleModel = EnumParticleModel.Cube,
+            MinQuantity = 1,
+            LifeLength = 0.3f,
+            Color = blue,
+            MinSize = 1f,
+            SizeEvolve = new EvolvingNatFloat(EnumTransformFunction.LINEAR, 10f),
+            MinPos = pos.Clone(),
+            GravityEffect = -0.5f
+        };
+        world.SpawnParticles(particles);
+    }
+
+    private void SpawnParticlesWorking(IWorldAccessor world, Vec3d pos, float temperature) {
+        var black = ColorUtil.ColorFromRgba(0, 0, 0, 80);
+        var white = ColorUtil.ColorFromRgba(255, 255, 255, 80);
+        var particles = new SimpleParticleProperties {
+            ParticleModel = EnumParticleModel.Cube,
+            MinQuantity = 1,
+            LifeLength = 0.25f,
+            Color = GameMath.LerpRgbaColor(Math.Clamp(temperature / 400f, 0f, 1f), black, white),
+            MinSize = 5f,
+            MinPos = pos.Clone(),
+            GravityEffect = -1f
+        };
+        world.SpawnParticles(particles);
     }
 
     protected override double GetCurrentForce(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, bool movesBackwards, double dt) {
