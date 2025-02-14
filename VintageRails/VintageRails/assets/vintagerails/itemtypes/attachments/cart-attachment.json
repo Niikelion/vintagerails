@@ -1,0 +1,58 @@
+{
+    code: "cart-attachment",
+	variantgroups: [
+		{ "code": "metal", "states": ["seat", "seat-trolley", "engine-combustion"] }
+	],
+    shape: { base: "item/trolley" },
+    attributes: {
+		attachableToEntity: {
+			texturePrefixCode: "cart-attachment",
+			categoryCode: "cart-attachment",
+			seatConfigByType: {
+				"*-seat*": {
+					controllable: false,
+					bodyYawLimit: 0.25,
+					mountOffset: { x: 0, y: 0, z: 0 },
+					eyeHeight: 1.75
+				},
+				"*": null
+			}
+		}
+	},
+	behaviorsByType: {
+		"*-trolley": [
+			{
+				name: "vintagerails.ControlledEngine",
+				properties: {
+					forwardForce: 10,
+					backwardForce: 7,
+				}
+			}
+    	],
+		"*-engine-combustion": [
+			{
+				name: "vintagerails.CombustionEngine",
+				properties: {
+					forceAtMin: 3,
+					forceAtMark: 9,
+					minimumTemperature: 100,
+					backwardsForceMul: 0.75
+				}
+			}
+		]
+	},
+    maxStackSize: 8,
+    creativeinventory: { "general": ["*"], "transport": ["*"] },
+    tpHandTransform: {
+		translation: { x: 0, y: 0, z: 0 },
+		rotation: { x: -55, y: -57, z: -31 },
+		origin: { x: -0.3, y: 0.73, z: -0.3 },
+		scale: 0.78
+	},
+	guiTransform: {
+		translation: { x: 0, y: 0, z: 0 },
+		rotation: { x: -34, y: -43, z: -180 },
+		origin: { x: 0.5, y: 0.6, z: 0.5 },
+		scale: 1.29
+	}
+}

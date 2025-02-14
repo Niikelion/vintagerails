@@ -12,7 +12,7 @@
         "wearableSlots": [
         {
           "code": "Seat",
-          "forCategoryCodes": ["basket", "seat", "chest", "crate"],
+          "forCategoryCodes": ["basket", "chest", "crate", "cart-attachment"],
           "attachmentPointCode": "SeatAP",
           "emptyInteractPassThrough": true,
           "stepParentTo": {
@@ -39,20 +39,23 @@
       { "code": "vintagerails.TrackRider" },
       { "code": "repulseagents", "movable": true },
       { "code": "interpolateposition" },
+      { "code": "passivephysics" },
       { "code": "selectionboxes" },
+      { "code": "creaturecarrier" },
       { "code": "rideableaccessories" },
-      { "code": "creaturecarrier" }
+      { "code": "vintagerails.InfoAttachments" }
     ]
   },
   "server": {
     "behaviors": [
       { "code": "vintagerails.TrackRider" },
       { "code": "vintagerails.TrackCollision" },
+      { "code": "vintagerails.TickAttachments" },
       { "code": "repulseagents", "movable": true },
       { "code": "passivephysics" },
       { "code": "selectionboxes" },
-      { "code": "rideableaccessories" },
       { "code": "creaturecarrier" },
+      { "code": "rideableaccessories" },
       { "code": "vintagerails.OrderedPhysics" }
     ]
   }

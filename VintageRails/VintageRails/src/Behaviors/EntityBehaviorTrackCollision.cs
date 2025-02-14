@@ -84,7 +84,7 @@ public class EntityBehaviorTrackCollision : EntityBehavior, IOrderedPhysicsTickB
         var otherRider = other.GetBehavior<TrackRiderEntityBehavior>();
         var otherCollisions = other.GetBehavior<EntityBehaviorTrackCollision>();
 
-        if (otherRider == null || otherCollisions == null || !otherRider.WasOnTrack) {
+        if (otherRider == null || otherCollisions == null || !otherRider.WasOnTrack || TrackRider.LastAnchorData == null || otherRider.LastAnchorData == null) {
             return false;
         }
         
@@ -110,8 +110,8 @@ public class EntityBehaviorTrackCollision : EntityBehavior, IOrderedPhysicsTickB
             var thisSpdSign = Math.Sign(previousSpeed);
             var otherSpdSign = Math.Sign(otherSpeed);
 
-            var thisDir = TrackRider.LastAnchorData!.AnchorDeltaNorm;// * thisSpdSign;
-            var otherDir = otherRider.LastAnchorData!.AnchorDeltaNorm;// * otherSpdSign;
+            var thisDir = TrackRider.LastAnchorData.AnchorDeltaNorm;
+            var otherDir = otherRider.LastAnchorData!.AnchorDeltaNorm;
             
             var dot = thisDir.Dot(otherDir);
             var dotSign = Math.Sign(dot);

@@ -65,12 +65,16 @@ public class ItemTrackWrench: Item
     public override void OnHeldInteractStart(
         ItemSlot slot,
         EntityAgent byEntity,
-        BlockSelection blockSel,
-        EntitySelection entitySel,
+        BlockSelection? blockSel,
+        EntitySelection? entitySel,
         bool firstEvent,
         ref EnumHandHandling handling
     )
     {
+        if (blockSel == null) {
+            return;
+        }
+        
         var playerEntity = byEntity as EntityPlayer;
         
         var block = byEntity.World.BlockAccessor.GetBlock(blockSel.Position);

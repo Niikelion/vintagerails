@@ -9,7 +9,7 @@
 	"textureSizes": {
 	},
 	"textures": {
-		"iron1": "game:block/metal/sheet/iron1"
+		"iron1": "block/metal/sheet/iron1"
 	},
 	"elements": [
 		{
@@ -137,20 +137,18 @@
 			]
 		},
 		{
-			"name": "DummySeat",
-			"from": [ 8.0, 5.0, 8.0 ],
-			"to": [ 8.0, 5.0, 8.0 ],
-			"shade": false,
-			"rotationOrigin": [ 8.0, 5.0, 8.0 ],
+			"name": "Cube2",
+			"from": [ -3.0, 4.0, 5.0 ],
+			"to": [ 0.0, 8.0, 11.0 ],
+			"rotationOrigin": [ -3.0, 4.0, 5.0 ],
 			"faces": {
-			},
-			"attachmentpoints": [
-				{
-					"code": "DummySeat",
-					"posX": "0.0","posY": "0.0","posZ": "7.0",
-					"rotationX": "180.0","rotationY": "0.0","rotationZ": "0.0"
-				}
-			]
+				"north": { "texture": "#iron1", "uv": [ 0.0, 0.0, 3.0, 4.0 ] },
+				"east": { "texture": "#iron1", "uv": [ 0.0, 0.0, 6.0, 4.0 ] },
+				"south": { "texture": "#iron1", "uv": [ 0.0, 0.0, 3.0, 4.0 ] },
+				"west": { "texture": "#iron1", "uv": [ 0.0, 0.0, 6.0, 4.0 ] },
+				"up": { "texture": "#iron1", "uv": [ 0.0, 0.0, 3.0, 6.0 ] },
+				"down": { "texture": "#iron1", "uv": [ 0.0, 0.0, 3.0, 6.0 ] }
+			}
 		}
 	],
 	"animations": [
@@ -173,6 +171,22 @@
 					"elements": {
 						"BackAxle": { "rotationX": 0.0, "rotationY": 0.0, "rotationZ": 360.0 },
 						"FrontAxle": { "rotationX": 0.0, "rotationY": 0.0, "rotationZ": 360.0 }
+					}
+				}
+			]
+		},
+
+		{
+			"name": "EngineRunning",
+			"code": "engine_running",
+			"quantityframes": 60,
+			"onActivityStopped": "PlayTillEnd",
+			"onAnimationEnd": "Repeat",
+			"keyframes": [
+				{
+					"frame": 0,
+					"elements": {
+						"Seat": { "offsetX": 0.0, "offsetY": 0.0, "offsetZ": 0.0 }
 					}
 				}
 			]

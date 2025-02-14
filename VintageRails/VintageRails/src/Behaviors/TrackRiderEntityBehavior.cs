@@ -18,6 +18,8 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
     private const string WasOnTrackAttribute = "wasOnTrack";
     private const string FacingAttribute = "vrails.facing";
     private const string PreviousTrackPosAttribute = "previousTrackPos";
+    
+    private const string EngineAnimationSpeedAttribute = "vrails.engineAnim";
 
     private const double Mass = 1.0;
 
@@ -66,9 +68,15 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         } 
     }
 
+    public double EngineAnimationSpeed {
+        get => entity.WatchedAttributes.GetDouble(EngineAnimationSpeedAttribute, 0);
+        set => entity.WatchedAttributes.SetDouble(EngineAnimationSpeedAttribute, value);
+    }
+    
     public TrackAnchorData? LastAnchorData { get; private set; }
 
     private EntityBehaviorPassivePhysics? _physics;
+    private EntityBehaviorSeatable? _seats;
     private EntityPartitioning _partitionUtil;
     
     private BlockPos? PreviousBp {
@@ -88,8 +96,10 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
     private double _nextPosOnTrack;
     
     private string _movingAnimation = "moving";
+    private string _engineAnimation = "engine_running";
 
-    private AnimationMetaData _animMeta = new();
+    private AnimationMetaData _movingAnimMeta = new();
+    private AnimationMetaData _engineAnimMeta = new();
     
     [NotNull] private ITreeAttribute? PersistentData { get; set; }
 
@@ -98,10 +108,15 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
     public override void Initialize(EntityProperties properties, JsonObject attributes) {
         base.Initialize(properties, attributes);
         
-        _animMeta.Animation = attributes["movingAnimation"].AsString(_movingAnimation);
-        _animMeta.Code = _animMeta.Animation;
-        _animMeta.AnimationSpeed = 1;
-        _animMeta = _animMeta.Init();
+        _movingAnimMeta.Animation = attributes["movingAnimation"].AsString(_movingAnimation);
+        _movingAnimMeta.Code = _movingAnimMeta.Animation;
+        _movingAnimMeta.AnimationSpeed = 1;
+        _movingAnimMeta = _movingAnimMeta.Init();
+        
+        _engineAnimMeta.Animation = attributes["engineAnimation"].AsString(_engineAnimation);
+        _engineAnimMeta.Code = _engineAnimMeta.Animation;
+        _engineAnimMeta.AnimationSpeed = 1;
+        _engineAnimMeta = _engineAnimMeta.Init();
         
         SideSnappingDistance = attributes["sideSnappingDistance"].AsDouble(0.5);
         DownSnappingDistance = attributes["downSnappingDistance"].AsDouble(0.15);
@@ -115,17 +130,20 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         base.AfterInitialized(onFirstSpawn);
 
         if (entity.World.Side == EnumAppSide.Client) {
-            entity.AnimManager.StartAnimation(_animMeta);
+            entity.AnimManager.StartAnimation(_movingAnimMeta);
+            entity.AnimManager.StartAnimation(_engineAnimMeta);
         }
         
         _physics = entity.GetBehavior<EntityBehaviorPassivePhysics>();
+        _seats = entity.GetBehavior<EntityBehaviorSeatable>();
     }
 
     public override string PropertyName() => "vrails.track_rider";
 
     public override void OnGameTick(float deltaTime) {
         if(entity.World.Side == EnumAppSide.Client) {
-            _animMeta.AnimationSpeed = (float)entity.WatchedAttributes.GetDouble(SpeedAttribute) * Facing;
+            _movingAnimMeta.AnimationSpeed = (float)Speed * Facing;
+            _engineAnimMeta.AnimationSpeed = (float)EngineAnimationSpeed;
         }
     }
 
@@ -176,6 +194,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
 
         var y = -(float)(Math.Atan2(adn2.Z * s, adn2.X * s) - Math.PI / 2.0);
         var p = 0f;
+        //Model has -X Forward
         var r = (float)(Math.Acos(adn2.Dot(new(0, 1, 0))) - Math.PI / 2.0) * s;
 
         _nextPos.SetAngles(r, y, p);
@@ -184,8 +203,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         Speed = speed;
     }
     
-    void IOrderedPhysicsTickBehavior.AfterTick(double dt)
-    {
+    void IOrderedPhysicsTickBehavior.AfterTick(double dt) {
         PreviousSpeed = Speed;
         if (!WasOnTrack) return;
         
@@ -194,8 +212,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         entity.Pos.SetFrom(entity.ServerPos);
     }
     
-    private void ApplyCollisionsAndPushing(ref double speed)
-    {
+    private void ApplyCollisionsAndPushing(ref double speed) {
         var pos = entity.Pos.XYZ;
         var radius = Math.Max(
             Math.Max(
@@ -218,6 +235,10 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         {
             //Stop iteration
             return false;
+        }
+
+        if (_seats != null && _seats.IsMountedBy(e)) {
+            return true;
         }
         
         var box1 = entity.SelectionBox;
