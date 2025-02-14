@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using VintageRails.Behaviors.Callbacks;
 using VintageRails.Utils;
 using Vintagestory.API.Common.Entities;
 
-namespace VintageRails.Behaviors;
+namespace VintageRails.Behaviors.Entities;
 
 public class EntityBehaviorOrderedPhysics : EntityBehavior {
 

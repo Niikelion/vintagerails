@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace VintageRails.Behaviors;
+namespace VintageRails.Behaviors.Callbacks;
 
 public interface IOrderedPhysicsTickBehavior {
 

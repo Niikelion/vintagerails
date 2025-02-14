@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using VintageRails.Behaviors.Callbacks;
+using VintageRails.Behaviors.Entities;
 using VintageRails.Utils;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -10,7 +11,7 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
 
-namespace VintageRails.Behaviors;
+namespace VintageRails.Behaviors.Collectibles;
 
 public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEngineBase, IInfoAttachment {
 
@@ -41,19 +42,19 @@ public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEn
         backwardsForceMul = properties["backwardsForceMul"].AsFloat(1f);
     }
 
-    protected override bool IsWorking(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) {
+    protected override bool IsWorking(ItemSlot slot, EntityBehaviorTrackRider rider, ITreeAttribute engineAttributes, double dt) {
         return base.IsWorking(slot, rider, engineAttributes, dt) && TemperatureRatio(engineAttributes) > 0;
     }
 
-    protected override void AfterWork(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) {
+    protected override void AfterWork(ItemSlot slot, EntityBehaviorTrackRider rider, ITreeAttribute engineAttributes, double dt) {
         
     }
 
-    protected override float GetAnimationSpeed(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, bool isWorking, bool movesBackwards, double dt) {
+    protected override float GetAnimationSpeed(ItemSlot slot, EntityBehaviorTrackRider rider, ITreeAttribute engineAttributes, bool isWorking, bool movesBackwards, double dt) {
         return TemperatureRatio(engineAttributes) * animationSpeedMul;
     }
 
-    protected override void TickEngine(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) {
+    protected override void TickEngine(ItemSlot slot, EntityBehaviorTrackRider rider, ITreeAttribute engineAttributes, double dt) {
         var entity = rider.entity;
         var world = entity.World;
         var pos = entity.Pos.XYZ;
@@ -116,7 +117,7 @@ public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEn
         world.SpawnParticles(particles);
     }
 
-    protected override double GetCurrentForce(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, bool movesBackwards, double dt) {
+    protected override double GetCurrentForce(ItemSlot slot, EntityBehaviorTrackRider rider, ITreeAttribute engineAttributes, bool movesBackwards, double dt) {
         return GameMath.Lerp(forceAtMinimum, forceAtMarker, TemperatureRatio(engineAttributes)) * (movesBackwards ? backwardsForceMul : 1f);
     }
 

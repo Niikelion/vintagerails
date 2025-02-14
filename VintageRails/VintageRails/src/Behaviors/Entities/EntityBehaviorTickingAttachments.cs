@@ -6,11 +6,11 @@ using VintageRails.Utils;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.GameContent;
 
-namespace VintageRails.Behaviors;
+namespace VintageRails.Behaviors.Entities;
 
 public class EntityBehaviorTickingAttachments : EntityBehavior, IOrderedPhysicsTickBehavior {
     
-    public IEnumerable<Type> Before { get; } = new[] { typeof(TrackRiderEntityBehavior) };
+    public IEnumerable<Type> Before { get; } = new[] { typeof(EntityBehaviorTrackRider) };
 
     [NotNull] private EntityBehaviorContainer? Container { get; set; }
 

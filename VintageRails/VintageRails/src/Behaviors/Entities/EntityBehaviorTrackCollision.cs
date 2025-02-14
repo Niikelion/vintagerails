@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using VintageRails.Behaviors.Callbacks;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
 using Vintagestory.GameContent;
 
-namespace VintageRails.Behaviors;
+namespace VintageRails.Behaviors.Entities;
 
 public class EntityBehaviorTrackCollision : EntityBehavior, IOrderedPhysicsTickBehavior {
 
-    public IEnumerable<Type> Before { get; } = new[] { typeof(TrackRiderEntityBehavior) };
+    public IEnumerable<Type> Before { get; } = new[] { typeof(EntityBehaviorTrackRider) };
     
     private EntityPartitioning _partitionUtil;
     
-    [NotNull] private TrackRiderEntityBehavior? TrackRider { get; set; }
+    [NotNull] private EntityBehaviorTrackRider? TrackRider { get; set; }
 
     private double _restitution = 0.5;
     private const double Mass = 1.0;
@@ -29,7 +30,7 @@ public class EntityBehaviorTrackCollision : EntityBehavior, IOrderedPhysicsTickB
     public override void AfterInitialized(bool onFirstSpawn) {
         base.AfterInitialized(onFirstSpawn);
 
-        TrackRider = entity.GetBehavior<TrackRiderEntityBehavior>();
+        TrackRider = entity.GetBehavior<EntityBehaviorTrackRider>();
     }
 
     public override string PropertyName() {
@@ -81,7 +82,7 @@ public class EntityBehaviorTrackCollision : EntityBehavior, IOrderedPhysicsTickB
         if (other == entity) {
             return false;
         }
-        var otherRider = other.GetBehavior<TrackRiderEntityBehavior>();
+        var otherRider = other.GetBehavior<EntityBehaviorTrackRider>();
         var otherCollisions = other.GetBehavior<EntityBehaviorTrackCollision>();
 
         if (otherRider == null || otherCollisions == null || !otherRider.WasOnTrack || TrackRider.LastAnchorData == null || otherRider.LastAnchorData == null) {

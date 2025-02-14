@@ -3,7 +3,7 @@ using System.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
-namespace VintageRails.Behaviors;
+namespace VintageRails.Behaviors.Collectibles.Blocks;
 
 public class BlockBehaviorTrackVariantProvider: BlockBehavior
 {

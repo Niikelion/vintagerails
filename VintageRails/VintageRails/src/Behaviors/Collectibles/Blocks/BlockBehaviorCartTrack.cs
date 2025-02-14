@@ -3,7 +3,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
-namespace VintageRails.Behaviors
+namespace VintageRails.Behaviors.Collectibles.Blocks
 {
     public class BlockBehaviorCartTrack : BlockBehavior
     {
