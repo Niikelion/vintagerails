@@ -1,4 +1,8 @@
-﻿using VintageRails.Utils;
+﻿using System.Collections.Generic;
+using System.Linq;
+using VintageRails.Behaviors.Callbacks;
+using VintageRails.Behaviors.Entities;
+using VintageRails.Utils;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -19,6 +23,8 @@ namespace VintageRails.Behaviors.Collectibles.Blocks
         
         private BlockFacing[]? endsDirections;
 
+        private List<TrackBehavior> _trackBehaviors = new();
+        
         public TrackAnchorData AnchorData { get; protected set; }
         
         public BlockBehaviorCartTrack(Block block) : base(block) {}
@@ -52,8 +58,29 @@ namespace VintageRails.Behaviors.Collectibles.Blocks
             Friction = properties["friction"].AsFloat();
 
             AnchorData = TrackAnchorData.OfDirections(StartDir, EndDir, Raised);
+
+            foreach (var behaviorJson in properties["behaviors"].AsArray() ?? Enumerable.Empty<JsonObject>()) {
+                var behavior = VintageRailsModSystem.TrackBehaviors.FromJson(behaviorJson);
+
+                if (behavior == null) {
+                    continue;
+                }
+                
+                var minSpeed = behaviorJson["minSpeed"].AsDouble(0);
+                var maxSpeed = behaviorJson["maxSpeed"].AsDouble(double.PositiveInfinity);
+
+                _trackBehaviors.Add(new TrackBehavior {
+                    Behavior = behavior,
+                    MaxSpeed = maxSpeed,
+                    MinSpeed = minSpeed
+                });
+            }
         }
 
+        public virtual IEnumerable<ITrackBehavior> GetValidTrackBehaviors(EntityBehaviorTrackRider rider) {
+            return _trackBehaviors.Where(behavior => rider.Speed <= behavior.MaxSpeed && rider.Speed >= behavior.MinSpeed).Select(behavior => behavior.Behavior);
+        }
+        
         public override void OnBlockPlaced(IWorldAccessor world, BlockPos blockPos, ref EnumHandling handling)
         {
             base.OnBlockPlaced(world, blockPos, ref handling);
@@ -64,6 +91,12 @@ namespace VintageRails.Behaviors.Collectibles.Blocks
         {
             base.OnBlockRemoved(world, pos, ref handling);
             //
+        }
+
+        private struct TrackBehavior {
+            public double MinSpeed { get; init; }
+            public double MaxSpeed { get; init; }
+            public required ITrackBehavior Behavior { get; init; }
         }
     }
 }

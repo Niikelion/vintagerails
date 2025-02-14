@@ -1,7 +1,11 @@
-﻿using HarmonyLib;
+﻿using System;
+using System.Collections.Generic;
+using HarmonyLib;
 using VintageRails.Behaviors;
+using VintageRails.Behaviors.Callbacks;
 using VintageRails.Behaviors.Collectibles;
 using VintageRails.Behaviors.Collectibles.Blocks;
+using VintageRails.Behaviors.Collectibles.Blocks.Track;
 using VintageRails.Behaviors.Entities;
 using VintageRails.Blocks;
 using VintageRails.Entities;
@@ -10,11 +14,13 @@ using VintageRails.Items;
 using VintageRails.Renderer;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.Server;
 
 namespace VintageRails
 {
     public class VintageRailsModSystem : ModSystem {
+        public static readonly TrackBehaviors TrackBehaviors = new();
         public static readonly PhysicsBatch MinecartsBatch = new();
         
         public override void Start(ICoreAPI api)
@@ -40,6 +46,11 @@ namespace VintageRails
             api.RegisterCollectibleBehaviorClass(Mod.Info.ModID + ".ControlledEngine", typeof(CollectibleBehaviorControlledCartEngine));
             api.RegisterCollectibleBehaviorClass(Mod.Info.ModID + ".CombustionEngine", typeof(CollectibleBehaviorCombustionCartEngine));
             api.RegisterCollectibleBehaviorClass(Mod.Info.ModID + ".RClickFuel", typeof(CollectibleBehaviorSimpleCartEngineRCFuel));
+            
+            TrackBehaviors.RegisterTrackBehavior("ConstantFriction", TrackBehaviorConstantFriction.Create);
+            TrackBehaviors.RegisterTrackBehavior("DynamicFriction", TrackBehaviorDynamicFriction.Create);
+            TrackBehaviors.RegisterTrackBehavior("EngineToggle", TrackBehaviorEngineToggle.Create);
+            
             new Harmony(Mod.Info.ModID).PatchAll();
         }
 
@@ -50,5 +61,24 @@ namespace VintageRails
         public override void StartServerSide(ICoreServerAPI api) {
             api.Server.AddPhysicsTickable(MinecartsBatch);
         }
+    }
+
+    public class TrackBehaviors {
+        private readonly Dictionary<string, System.Func<JsonObject, ITrackBehavior>> _factories = new();
+
+        public void RegisterTrackBehavior(string id, System.Func<JsonObject, ITrackBehavior> factory) {
+            _factories.Add(id, factory);
+        }
+
+        public ITrackBehavior? FromJson(JsonObject properties) {
+            var code = properties["code"].AsString();
+
+            if (_factories.TryGetValue(code, out var factory)) {
+                return factory(properties);
+            }
+
+            return null;
+        }
+        
     }
 }
