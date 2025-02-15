@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using VintageRails.Behaviors.Callbacks;
 using VintageRails.Behaviors.Entities;
@@ -11,10 +12,6 @@ namespace VintageRails.Behaviors.Collectibles.Blocks
 {
     public class BlockBehaviorCartTrack : BlockBehavior
     {
-        public float SpeedMultiplier { get; private set; }
-        public float Friction { get; private set; } = 0.1f;
-        public float ConstantAcceleration { get; private set; }
-
         public BlockFacing StartDir { get; private set; } = BlockFacing.NORTH;
         public BlockFacing EndDir { get; private set; } = BlockFacing.SOUTH;
         public bool Raised { get; private set; }
@@ -32,9 +29,7 @@ namespace VintageRails.Behaviors.Collectibles.Blocks
         public override void Initialize(JsonObject properties)
         {
             base.Initialize(properties);
-
-            SpeedMultiplier = properties["speedMultiplier"].AsFloat(1);
-
+            
             bool hasStartDir = properties["startDir"].Exists;
             bool hasEndDir = properties["endDir"].Exists;
 
@@ -53,13 +48,10 @@ namespace VintageRails.Behaviors.Collectibles.Blocks
             Raised = properties["raised"].AsBool(Raised);
             StartDir = hasStartDir ? BlockFacing.FromFirstLetter(properties["startDir"].AsString()) : StartDir;
             EndDir = hasEndDir ? BlockFacing.FromFirstLetter(properties["endDir"].AsString()) : EndDir;
-            
-            ConstantAcceleration = properties["acceleration"].AsFloat();
-            Friction = properties["friction"].AsFloat();
 
             AnchorData = TrackAnchorData.OfDirections(StartDir, EndDir, Raised);
 
-            foreach (var behaviorJson in properties["behaviors"].AsArray() ?? Enumerable.Empty<JsonObject>()) {
+            foreach (var behaviorJson in properties["trackBehaviors"].AsArray() ?? Enumerable.Empty<JsonObject>()) {
                 var behavior = VintageRailsModSystem.TrackBehaviors.FromJson(behaviorJson);
 
                 if (behavior == null) {
@@ -78,7 +70,25 @@ namespace VintageRails.Behaviors.Collectibles.Blocks
         }
 
         public virtual IEnumerable<ITrackBehavior> GetValidTrackBehaviors(EntityBehaviorTrackRider rider) {
-            return _trackBehaviors.Where(behavior => rider.Speed <= behavior.MaxSpeed && rider.Speed >= behavior.MinSpeed).Select(behavior => behavior.Behavior);
+            return _trackBehaviors.Where(behavior => Math.Abs(rider.Speed) <= behavior.MaxSpeed &&  Math.Abs(rider.Speed) >= behavior.MinSpeed).Select(behavior => behavior.Behavior);
+        }
+
+        public virtual void OnCartEntered(EntityBehaviorTrackRider rider, BlockPos currentPos, BlockPos previousPos) {
+            foreach (var behavior in GetValidTrackBehaviors(rider)) {
+                behavior.OnCartEntered(rider, currentPos, previousPos);
+            }
+        }
+        
+        public virtual void OnCartExited(EntityBehaviorTrackRider rider, BlockPos currentPos, BlockPos nextPos) {
+            foreach (var behavior in GetValidTrackBehaviors(rider)) {
+                behavior.OnCartExited(rider, currentPos, nextPos);
+            }
+        }
+        
+        public virtual void OnCartTick(EntityBehaviorTrackRider rider, BlockPos pos, double dt) {
+            foreach (var behavior in GetValidTrackBehaviors(rider)) {
+                behavior.OnTickCart(rider, pos, dt);
+            }
         }
         
         public override void OnBlockPlaced(IWorldAccessor world, BlockPos blockPos, ref EnumHandling handling)

@@ -23,7 +23,7 @@ public class TrackBehaviorConstantFriction : ITrackBehavior {
         var speedAbs = Math.Abs(speed);
         var speedSign = Math.Sign(speed);
 
-        speedAbs -= _friction;
+        speedAbs -= _friction * dt;
         speedAbs = Math.Max(speedAbs, 0);
         rider.Speed = speedAbs * speedSign;
     }

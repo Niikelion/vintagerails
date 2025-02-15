@@ -183,12 +183,12 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
             LastAnchorData = anchors;
         }
         
-        speed += track.ConstantAcceleration * dt - speed * track.Friction * dt;
+        //speed += track.ConstantAcceleration * dt - speed * track.Friction * dt;
 
         ApplyCollisionsAndPushing(ref speed);
+        Speed = speed;
         
-        ApplyMovement(ref posOnTrack,dt * speed, out var movementCorrection, out var facingCorrection);
-        speed *= movementCorrection;
+        ApplyMovement(track, ref posOnTrack, speed, out var facingCorrection, dt);
         Facing *= facingCorrection;
         
         var s = Facing;
@@ -201,8 +201,6 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
 
         _nextPos.SetAngles(r, y, p);
         _nextPosOnTrack = posOnTrack;
-        
-        Speed = speed;
     }
     
     void IOrderedPhysicsTickBehavior.AfterTick(double dt) {
@@ -299,14 +297,24 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
         posOnTrack = positionDot;
     }
 
-    private void ApplyMovement(ref double currentPos, double movement, out int movementCorrection, out int facingCorrection)
-    {
+    private void ApplyMovement(BlockBehaviorCartTrack trackIn, ref double currentPos, double speed, out int facingCorrection, double dt) {
+        var movement = speed * dt;
+        var movementAbs = Math.Abs(movement);
         var newPos = currentPos + movement;
-
+        
         var deltaL = LastAnchorData!.DeltaL;
         
         var bp = entity.Pos.AsBlockPos;
+
+        var dt1 = dt; //I hope this is correct
+        if (newPos > deltaL) {
+            dt1 *= (newPos - currentPos) / movement;
+        }
+        else if (newPos < 0) {
+            dt1 *= (currentPos - newPos) / movement;
+        }
         
+        trackIn.OnCartTick(this, PreviousBp!, dt1);
         if (newPos > deltaL || newPos < 0)
         {
             //Always replaced
@@ -316,33 +324,41 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
             var entry = TrackAnchorData.GetEntryFromMovement(movement);
             var previousEntry = entry;
             var entryOrig = entry;
+            var track = (BlockBehaviorCartTrack?)trackIn;
 
             var posAbs = newPos > deltaL ? newPos - deltaL : -newPos;
             while (posAbs > 0) {
                 pEnd = anchors[1 - entry].offset.AddToCenter(bp);
                 previousAnchors = anchors;
                 previousEntry = entry;
-                (var track, bp, entry) = RailUtil.GetNextTrack(entity.World, bp, anchors, entry);
+                var previousTrack = track!; // will not be null here
+                var previousBp = bp;
+                (track, bp, entry) = RailUtil.GetNextTrack(entity.World, bp, anchors, entry);
+                previousTrack.OnCartExited(this, previousBp, bp);
                 anchors = track?.AnchorData;
+                
                 if (anchors == null) break;
+                track!.OnCartEntered(this, bp, previousBp);//"!" because nullability checks fail to detect that anchors can only be null when track is null
+
+                var distanceRatio = Math.Min(posAbs, anchors.DeltaL) / movementAbs;
+                track!.OnCartTick(this, bp, dt * distanceRatio);
                 
                 //For derailment
                 LastAnchorData = anchors;
                 deltaL = anchors.DeltaL;
                 posAbs -= deltaL;
             }
-
+            
             if (anchors == null)
             {
                 _nextPos.SetPos(pEnd + previousAnchors.AnchorDeltaNorm * 0.1 * -(previousEntry * 2 - 1));
-                movementCorrection = 1;
                 facingCorrection = 1;
                 return;
             }
-
             posAbs += deltaL;
-            movementCorrection = entryOrig == entry ? 1 : -1;
-            facingCorrection = entryOrig == entry ? 1 : -1;
+            var correction = entryOrig == entry ? 1 : -1;
+            Speed *= correction;
+            facingCorrection = correction;
             
             if (entry == 1) posAbs = deltaL - posAbs;
             
@@ -352,12 +368,12 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
         else
         {
             ApplyNextPos(bp, LastAnchorData, newPos / deltaL);
-            movementCorrection = 1;
             facingCorrection = 1;
             currentPos = newPos;
         }
     }
-
+    
+    
     private void ApplyNextPos(BlockPos bp, TrackAnchorData anchors, double posFactor) {
         var la = anchors.LowerAnchor.offset;
         var ha = anchors.HigherAnchor.offset;

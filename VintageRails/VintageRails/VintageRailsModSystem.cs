@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using HarmonyLib;
-using VintageRails.Behaviors;
 using VintageRails.Behaviors.Callbacks;
 using VintageRails.Behaviors.Collectibles;
 using VintageRails.Behaviors.Collectibles.Blocks;
@@ -22,7 +20,12 @@ namespace VintageRails
     public class VintageRailsModSystem : ModSystem {
         public static readonly TrackBehaviors TrackBehaviors = new();
         public static readonly PhysicsBatch MinecartsBatch = new();
-        
+
+        public override void StartPre(ICoreAPI api) {
+            base.StartPre(api);
+            TrackBehaviors.Clear();
+        }
+
         public override void Start(ICoreAPI api)
         {
             api.RegisterItemClass(Mod.Info.ModID + ".ItemTrackWrench", typeof(ItemTrackWrench));
@@ -46,10 +49,15 @@ namespace VintageRails
             api.RegisterCollectibleBehaviorClass(Mod.Info.ModID + ".ControlledEngine", typeof(CollectibleBehaviorControlledCartEngine));
             api.RegisterCollectibleBehaviorClass(Mod.Info.ModID + ".CombustionEngine", typeof(CollectibleBehaviorCombustionCartEngine));
             api.RegisterCollectibleBehaviorClass(Mod.Info.ModID + ".RClickFuel", typeof(CollectibleBehaviorSimpleCartEngineRCFuel));
+
+            if (api.Side == EnumAppSide.Server) {
+                TrackBehaviors.RegisterTrackBehavior("ConstantFriction", TrackBehaviorConstantFriction.Create);
+                TrackBehaviors.RegisterTrackBehavior("ConstantAcceleration", TrackBehaviorConstantAcceleration.Create);
+                TrackBehaviors.RegisterTrackBehavior("DynamicFriction", TrackBehaviorDynamicFriction.Create);
+                TrackBehaviors.RegisterTrackBehavior("EngineToggle", TrackBehaviorEngineToggle.Create);
+                TrackBehaviors.RegisterTrackBehavior("Debug", TrackBehaviorDebug.Create);
+            }
             
-            TrackBehaviors.RegisterTrackBehavior("ConstantFriction", TrackBehaviorConstantFriction.Create);
-            TrackBehaviors.RegisterTrackBehavior("DynamicFriction", TrackBehaviorDynamicFriction.Create);
-            TrackBehaviors.RegisterTrackBehavior("EngineToggle", TrackBehaviorEngineToggle.Create);
             
             new Harmony(Mod.Info.ModID).PatchAll();
         }
@@ -71,6 +79,10 @@ namespace VintageRails
         }
 
         public ITrackBehavior? FromJson(JsonObject properties) {
+            if (!properties["enabled"].AsBool(true)) {
+                return null;
+            }
+            
             var code = properties["code"].AsString();
 
             if (_factories.TryGetValue(code, out var factory)) {
@@ -78,6 +90,10 @@ namespace VintageRails
             }
 
             return null;
+        }
+
+        public void Clear() {
+            _factories.Clear();
         }
         
     }
