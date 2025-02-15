@@ -33,6 +33,7 @@ namespace VintageRails
             api.RegisterBlockClass(Mod.Info.ModID + ".Rails", typeof(BlockTrack));
 
             api.RegisterBlockBehaviorClass(Mod.Info.ModID + ".CartTrack", typeof(BlockBehaviorCartTrack));
+            api.RegisterBlockBehaviorClass(Mod.Info.ModID + ".CartTrackCurved", typeof(BlockBehaviorCurvedCartTrack));
             api.RegisterBlockBehaviorClass(Mod.Info.ModID + ".OverridePick", typeof(BlockBehaviorOverridePick));
             api.RegisterBlockBehaviorClass(Mod.Info.ModID + ".TrackVariantProvider", typeof(BlockBehaviorTrackVariantProvider));
             

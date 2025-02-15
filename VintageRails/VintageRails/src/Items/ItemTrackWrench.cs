@@ -107,7 +107,7 @@ public class ItemTrackWrench: Item
                 var blockPos = block.Position.AddCopy(facing);
                 blockPos.Y += i;
                 var neighbourBlock = world.BlockAccessor.GetBlock(blockPos);
-                var neighbourTrack = neighbourBlock.GetBehavior<BlockBehaviorCartTrack>();
+                var neighbourTrack = neighbourBlock.GetCollectibleBehavior<BlockBehaviorCartTrack>(true);
                 if (neighbourTrack == null) continue;
                 
                 neighbours.Add((blockPos, neighbourTrack));
@@ -147,7 +147,7 @@ public class ItemTrackWrench: Item
 
             var variantBlock = world.BlockAccessor.GetBlock(variant);
 
-            var variantTrack = variantBlock?.GetBehavior<BlockBehaviorCartTrack>();
+            var variantTrack = variantBlock?.GetCollectibleBehavior<BlockBehaviorCartTrack>(true);
             
             if (variantTrack == null || variantBlock == null) return;
 

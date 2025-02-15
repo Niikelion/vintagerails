@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using VintageRails.Behaviors.Callbacks;
 using VintageRails.Behaviors.Entities;
@@ -22,7 +23,7 @@ namespace VintageRails.Behaviors.Collectibles.Blocks
 
         private List<TrackBehavior> _trackBehaviors = new();
         
-        public TrackAnchorData AnchorData { get; protected set; }
+        protected TrackAnchorData AnchorData { get; set; }
         
         public BlockBehaviorCartTrack(Block block) : base(block) {}
 
@@ -89,6 +90,31 @@ namespace VintageRails.Behaviors.Collectibles.Blocks
             foreach (var behavior in GetValidTrackBehaviors(rider)) {
                 behavior.OnTickCart(rider, pos, dt);
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rider"></param>
+        /// <param name="pos"></param>
+        /// <param name="entrySide">Relative to this block, or null if is rerailing</param>
+        /// <returns></returns>
+        public virtual TrackAnchorData? GetAnchorDataForEntrySide(EntityBehaviorTrackRider rider, BlockPos pos, Vec3i? entrySide) {
+            if (entrySide == null) {
+                return AnchorData;
+            }
+            if (entrySide.Y == -1) {
+                entrySide.Y = 0;
+            }
+            if(AnchorData.LowerAnchor.blockOffset.Equals(entrySide) || AnchorData.HigherAnchor.blockOffset.Equals(entrySide)) {
+                return AnchorData;
+            }
+            
+            return null;
+        }
+
+        public virtual TrackAnchorData GetAnchorsForConnecting() {
+            return AnchorData;
         }
         
         public override void OnBlockPlaced(IWorldAccessor world, BlockPos blockPos, ref EnumHandling handling)
