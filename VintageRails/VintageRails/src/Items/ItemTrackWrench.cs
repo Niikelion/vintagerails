@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using VintageRails.Behaviors;
+using VintageRails.Behaviors.Collectibles.Blocks;
 using VintageRails.Utils;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;

@@ -1,5 +1,6 @@
 using System;
 using VintageRails.Behaviors;
+using VintageRails.Behaviors.Collectibles.Blocks;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 

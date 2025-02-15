@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using VintageRails.Behaviors;
+using VintageRails.Behaviors.Entities;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Util;
 

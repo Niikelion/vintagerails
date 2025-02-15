@@ -1,5 +1,6 @@
 using System;
 using VintageRails.Behaviors.Callbacks;
+using VintageRails.Behaviors.Entities;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
@@ -7,7 +8,7 @@ using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 
-namespace VintageRails.Behaviors;
+namespace VintageRails.Behaviors.Collectibles;
 
 public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, ITickAttachment, IAttachedInteractions {
 
@@ -30,7 +31,7 @@ public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, I
     }
 
     public virtual void OnTick(ItemSlot self, Entity owner, double dt) {
-        var rider = owner.GetBehavior<TrackRiderEntityBehavior>();
+        var rider = owner.GetBehavior<EntityBehaviorTrackRider>();
         if (rider is not null) {
             var engineAttributes = self.Itemstack.Attributes.GetOrAddTreeAttribute(EngineTreeAttribute);
 
@@ -60,23 +61,23 @@ public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, I
         self.MarkDirty();
     }
 
-    protected virtual double GetCurrentForce(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, bool movesBackwards, double dt) {
+    protected virtual double GetCurrentForce(ItemSlot slot, EntityBehaviorTrackRider rider, ITreeAttribute engineAttributes, bool movesBackwards, double dt) {
         return movesBackwards ? backwardForce : forwardForce;
     }
 
-    protected virtual bool ShouldMoveBackwards(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) {
+    protected virtual bool ShouldMoveBackwards(ItemSlot slot, EntityBehaviorTrackRider rider, ITreeAttribute engineAttributes, double dt) {
         return engineAttributes.GetBool(MoveBackwardsAttribute, false);
     }
 
-    protected virtual void TickEngine(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) { }
+    protected virtual void TickEngine(ItemSlot slot, EntityBehaviorTrackRider rider, ITreeAttribute engineAttributes, double dt) { }
 
-    protected virtual bool IsWorking(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt) {
+    protected virtual bool IsWorking(ItemSlot slot, EntityBehaviorTrackRider rider, ITreeAttribute engineAttributes, double dt) {
         return IsEnabled(engineAttributes);
     }
 
-    protected abstract void AfterWork(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, double dt);
+    protected abstract void AfterWork(ItemSlot slot, EntityBehaviorTrackRider rider, ITreeAttribute engineAttributes, double dt);
 
-    protected abstract float GetAnimationSpeed(ItemSlot slot, TrackRiderEntityBehavior rider, ITreeAttribute engineAttributes, bool isWorking, bool movesBackwards, double dt);
+    protected abstract float GetAnimationSpeed(ItemSlot slot, EntityBehaviorTrackRider rider, ITreeAttribute engineAttributes, bool isWorking, bool movesBackwards, double dt);
 
     public static bool IsEnabled(ITreeAttribute engineAttributes) {
         return engineAttributes.GetBool(EnabledAttribute);

@@ -1,5 +1,8 @@
 ﻿using HarmonyLib;
 using VintageRails.Behaviors;
+using VintageRails.Behaviors.Collectibles;
+using VintageRails.Behaviors.Collectibles.Blocks;
+using VintageRails.Behaviors.Entities;
 using VintageRails.Blocks;
 using VintageRails.Entities;
 using VintageRails.Global;
@@ -27,7 +30,7 @@ namespace VintageRails
             api.RegisterEntity(Mod.Info.ModID + ".Cart", typeof(EntityCart));
             api.RegisterEntity(Mod.Info.ModID + ".SeatSup", typeof(EntitySeatInstSupplier));
             
-            api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".TrackRider", typeof(TrackRiderEntityBehavior));
+            api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".TrackRider", typeof(EntityBehaviorTrackRider));
             api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".TrackCollision", typeof(EntityBehaviorTrackCollision));
             api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".OrderedPhysics", typeof(EntityBehaviorOrderedPhysics));
             api.RegisterEntityBehaviorClass(Mod.Info.ModID + ".TickAttachments", typeof(EntityBehaviorTickingAttachments));

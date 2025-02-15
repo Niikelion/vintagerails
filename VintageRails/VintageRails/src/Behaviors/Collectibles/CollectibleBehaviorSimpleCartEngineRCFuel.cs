@@ -6,7 +6,7 @@ using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 
-namespace VintageRails.Behaviors;
+namespace VintageRails.Behaviors.Collectibles;
 
 public class CollectibleBehaviorSimpleCartEngineRCFuel : CollectibleBehavior, IAttachedInteractions {
 

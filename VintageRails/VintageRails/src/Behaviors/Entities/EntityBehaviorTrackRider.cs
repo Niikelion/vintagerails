@@ -1,5 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using VintageRails.Behaviors.Callbacks;
+using VintageRails.Behaviors.Collectibles.Blocks;
 using VintageRails.Utils;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
@@ -7,9 +9,9 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
-namespace VintageRails.Behaviors;
+namespace VintageRails.Behaviors.Entities;
 
-public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehavior
+public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehavior
 {
     private const string RootAttribute = "vrails.trackRider";
     private const string PosOnTrackAttribute = "posOnTrack";
@@ -103,7 +105,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
     
     [NotNull] private ITreeAttribute? PersistentData { get; set; }
 
-    public TrackRiderEntityBehavior(Entity entity) : base(entity) {}
+    public EntityBehaviorTrackRider(Vintagestory.API.Common.Entities.Entity entity) : base(entity) {}
     
     public override void Initialize(EntityProperties properties, JsonObject attributes) {
         base.Initialize(properties, attributes);
@@ -229,7 +231,7 @@ public class TrackRiderEntityBehavior : EntityBehavior, IOrderedPhysicsTickBehav
         speed = s;
     }
 
-    private bool HandleEntityCollision(Entity e, ref double speed)
+    private bool HandleEntityCollision(Vintagestory.API.Common.Entities.Entity e, ref double speed)
     {
         if (LastAnchorData == null)
         {
