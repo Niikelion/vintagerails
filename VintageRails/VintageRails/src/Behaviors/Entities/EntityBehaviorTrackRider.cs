@@ -182,8 +182,6 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
             PreviousBp = previousBp.Set(bp);
             LastAnchorData = anchors;
         }
-        
-        //speed += track.ConstantAcceleration * dt - speed * track.Friction * dt;
 
         ApplyCollisionsAndPushing(ref speed);
         Speed = speed;
