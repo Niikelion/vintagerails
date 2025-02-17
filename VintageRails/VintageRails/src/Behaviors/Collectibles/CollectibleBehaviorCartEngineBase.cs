@@ -20,6 +20,8 @@ public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, I
     
     private double forwardForce;
     private double backwardForce;
+
+    private double internalFrictionCoefficient;
     
     public CollectibleBehaviorCartEngineBase(CollectibleObject collObj) : base(collObj) {
         
@@ -30,6 +32,7 @@ public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, I
 
         forwardForce = properties["forwardForce"].AsDouble();
         backwardForce = properties["backwardForce"].AsDouble();
+        internalFrictionCoefficient = properties["internalFrictionCoefficient"].AsDouble(5f);
     }
 
     public virtual void OnTick(ItemSlot self, Entity owner, double dt) {
@@ -53,7 +56,7 @@ public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, I
                     rider.Speed += rider.Facing * force * dt;
                     
                     var topSpeed = GetTopSpeed(self, rider, engineAttributes, dt);
-                    var internalFriction = (Abs(rider.Speed) - topSpeed) * dt * 5f; //friction coefficient = 1
+                    var internalFriction = (Abs(rider.Speed) - topSpeed) * dt * this.internalFrictionCoefficient; //friction coefficient = 5
                     rider.Speed -= Max(internalFriction, 0) * Sign(rider.Speed);
                     
                     AfterWork(self, rider, engineAttributes, dt);
