@@ -33,8 +33,10 @@
 			{
 				name: "vintagerails.CombustionEngine",
 				properties: {
-					forceAtMin: 5,
-					forceAtMark: 15,
+					forceAtMin: 6,
+					forceAtMark: 18,
+					topSpeedAtMin: 0,
+					topSpeedAtMark: 5,
 					minimumTemperature: 100,
 					backwardsForceMul: 0.75
 				}

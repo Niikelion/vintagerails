@@ -24,6 +24,8 @@ public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEn
     
     private float forceAtMinimum = 3;
     private float forceAtMarker = 9;
+    private float topSpeedAtMinimum = 3;
+    private float topSpeedAtMarker = 9;
     private float backwardsForceMul = 0.75f;
     private float animationSpeedMul = 1;
 
@@ -37,11 +39,13 @@ public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEn
         base.Initialize(properties);
         forceAtMinimum = properties["forceAtMin"].AsFloat();
         forceAtMarker = properties["forceAtMark"].AsFloat();
+        topSpeedAtMinimum = properties["topSpeedAtMin"].AsFloat();
+        topSpeedAtMarker = properties["topSpeedAtMark"].AsFloat();
         minimumTemperature = properties["minimumTemperature"].AsFloat(100f);
         markerTemperature = properties["markerTemperature"].AsFloat(1350); // Coke burning temperature
         backwardsForceMul = properties["backwardsForceMul"].AsFloat(1f);
     }
-
+    
     protected override bool IsWorking(ItemSlot slot, EntityBehaviorTrackRider rider, ITreeAttribute engineAttributes, double dt) {
         return base.IsWorking(slot, rider, engineAttributes, dt) && TemperatureRatio(engineAttributes) > 0;
     }
@@ -117,6 +121,10 @@ public class CollectibleBehaviorCombustionCartEngine : CollectibleBehaviorCartEn
         world.SpawnParticles(particles);
     }
 
+    protected override float GetTopSpeed(ItemSlot slot, EntityBehaviorTrackRider rider, ITreeAttribute engineAttributes, double dt) {
+        return GameMath.Lerp(topSpeedAtMinimum, topSpeedAtMarker, TemperatureRatio(engineAttributes));
+    }
+    
     protected override double GetCurrentForce(ItemSlot slot, EntityBehaviorTrackRider rider, ITreeAttribute engineAttributes, bool movesBackwards, double dt) {
         return GameMath.Lerp(forceAtMinimum, forceAtMarker, TemperatureRatio(engineAttributes)) * (movesBackwards ? backwardsForceMul : 1f);
     }

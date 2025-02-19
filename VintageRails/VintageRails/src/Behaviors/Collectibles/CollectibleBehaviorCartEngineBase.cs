@@ -7,6 +7,7 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
+using static System.Math;
 
 namespace VintageRails.Behaviors.Collectibles;
 
@@ -14,10 +15,13 @@ public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, I
 
     public const string EngineTreeAttribute = "vrails.engine";
     public const string MoveBackwardsAttribute = "movesBack";
+    public const string TopSpeedAttribute = "topSpeed";
     public const string EnabledAttribute = "enabled";
     
     private double forwardForce;
     private double backwardForce;
+
+    private double internalFrictionCoefficient;
     
     public CollectibleBehaviorCartEngineBase(CollectibleObject collObj) : base(collObj) {
         
@@ -28,6 +32,7 @@ public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, I
 
         forwardForce = properties["forwardForce"].AsDouble();
         backwardForce = properties["backwardForce"].AsDouble();
+        internalFrictionCoefficient = properties["internalFrictionCoefficient"].AsDouble(5f);
     }
 
     public virtual void OnTick(ItemSlot self, Entity owner, double dt) {
@@ -47,12 +52,15 @@ public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, I
                     movesBack = ShouldMoveBackwards(self, rider, engineAttributes, dt);
                     var force = GetCurrentForce(self, rider, engineAttributes, movesBack, dt);
                     force *= movesBack ? -1 : 1;
-
+                    
                     rider.Speed += rider.Facing * force * dt;
-
+                    
+                    var topSpeed = GetTopSpeed(self, rider, engineAttributes, dt);
+                    var internalFriction = (Abs(rider.Speed) - topSpeed) * dt * this.internalFrictionCoefficient; //friction coefficient = 5
+                    rider.Speed -= Max(internalFriction, 0) * Sign(rider.Speed);
+                    
                     AfterWork(self, rider, engineAttributes, dt);
                 }
-
             }
             var animSpeed = GetAnimationSpeed(self, rider, engineAttributes, isWorking, movesBack, dt);
             rider.EngineAnimationSpeed = animSpeed;
@@ -79,6 +87,10 @@ public abstract class CollectibleBehaviorCartEngineBase : CollectibleBehavior, I
 
     protected abstract float GetAnimationSpeed(ItemSlot slot, EntityBehaviorTrackRider rider, ITreeAttribute engineAttributes, bool isWorking, bool movesBackwards, double dt);
 
+    protected virtual float GetTopSpeed(ItemSlot slot, EntityBehaviorTrackRider rider, ITreeAttribute engineAttributes, double dt) {
+        return engineAttributes.GetFloat(TopSpeedAttribute);
+    }
+    
     public static bool IsEnabled(ITreeAttribute engineAttributes) {
         return engineAttributes.GetBool(EnabledAttribute);
     }
