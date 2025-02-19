@@ -168,7 +168,7 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
         BlockBehaviorCartTrack? track;
         var previousBp = PreviousBp;
         if (previousBp == null) {
-            (track, previousBp) = this.GetTrackData(entityPos, SideSnappingDistance, DownSnappingDistance, UpSnappingDistance);
+            (track, previousBp) = entity.World.GetTrackData(entityPos, SideSnappingDistance, DownSnappingDistance, UpSnappingDistance);
         }
         else {
             track = entity.World.GetTrackAtPos(previousBp);
@@ -184,7 +184,7 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
         }
 
         if (!WasOnTrack) {
-            var anchors = track.GetAnchorDataForEntrySide(this, previousBp, null);
+            var anchors = track.GetAnchorDataForEntrySide(entity.World, previousBp, null);
             if (anchors == null) {
                 return;
             }
@@ -361,7 +361,7 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
                 previousEntry = entry;
                 var previousTrack = track!; // will not be null here
                 var previousBp = bp;
-                (track, bp, entry, anchors) = RailUtil.GetNextTrack(this, bp, anchors, entry);
+                (track, bp, entry, anchors) = RailUtil.GetNextTrack(entity.World, bp, anchors, entry);
                 previousTrack.OnCartExited(this, previousBp, bp);
 
                 if (anchors == null) break;

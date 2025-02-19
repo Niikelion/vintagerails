@@ -10,8 +10,8 @@ public class BlockBehaviorCurvedCartTrack : BlockBehaviorCartTrack {
     public BlockBehaviorCurvedCartTrack(Block block) : base(block) {
     }
 
-    public override TrackAnchorData? GetAnchorDataForEntrySide(EntityBehaviorTrackRider rider, BlockPos pos, Vec3i? entrySide) {
-        var anchors = base.GetAnchorDataForEntrySide(rider, pos, entrySide);
+    public override TrackAnchorData? GetAnchorDataForEntrySide(IWorldAccessor world, BlockPos pos, Vec3i? entrySide) {
+        var anchors = base.GetAnchorDataForEntrySide(world, pos, entrySide);
         if (anchors != null) {
             return anchors;
         }

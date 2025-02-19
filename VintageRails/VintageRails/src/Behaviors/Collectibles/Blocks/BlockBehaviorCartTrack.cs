@@ -99,7 +99,7 @@ namespace VintageRails.Behaviors.Collectibles.Blocks
         /// <param name="pos"></param>
         /// <param name="entrySide">Relative to this block, or null if is rerailing</param>
         /// <returns></returns>
-        public virtual TrackAnchorData? GetAnchorDataForEntrySide(EntityBehaviorTrackRider rider, BlockPos pos, Vec3i? entrySide) {
+        public virtual TrackAnchorData? GetAnchorDataForEntrySide(IWorldAccessor rider, BlockPos pos, Vec3i? entrySide) {
             if (entrySide == null) {
                 return AnchorData;
             }

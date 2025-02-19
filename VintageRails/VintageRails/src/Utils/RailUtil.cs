@@ -25,13 +25,12 @@ public static class RailUtil {
     // }
     
     public static (BlockBehaviorCartTrack? track, BlockPos foundAt) GetTrackData(
-        this EntityBehaviorTrackRider rider,
+        this IWorldAccessor world,
         Vec3d pos,
         double sideTolerance = 0.5,
         double downTolerance = 0.15,
         double upTolerance = 0.4
     ) {
-        var world = rider.entity.World;
         var bp = pos.AsBlockPos;
         var track = world.GetBlockBehaviour<BlockBehaviorCartTrack>(bp);
 
@@ -46,7 +45,7 @@ public static class RailUtil {
         
         if (track == null) return (null, bp);
         
-        var anchors = track.GetAnchorDataForEntrySide(rider, bp, null);
+        var anchors = track.GetAnchorDataForEntrySide(world, bp, null);
 
         if (anchors == null) {
             return (null, bp);
@@ -77,8 +76,7 @@ public static class RailUtil {
     public static T? GetBlockBehaviour<T>(this IWorldAccessor world, BlockPos pos) where T : BlockBehavior =>
         world.BlockAccessor.GetBlock(pos)?.GetCollectibleBehavior<T>(true);
 
-    public static (BlockBehaviorCartTrack? track, BlockPos pos, int entryAnchor, TrackAnchorData? anchors) GetNextTrack(EntityBehaviorTrackRider rider, BlockPos bp, TrackAnchorData anchors, int entryAnchor) {
-        var world = rider.entity.World;
+    public static (BlockBehaviorCartTrack? track, BlockPos pos, int entryAnchor, TrackAnchorData? anchors) GetNextTrack(IWorldAccessor world, BlockPos bp, TrackAnchorData anchors, int entryAnchor) {
         var anchor = anchors[1 - entryAnchor];
 
         var nextTrackPos = bp.AddCopy(anchor.blockOffset);
@@ -91,7 +89,7 @@ public static class RailUtil {
             nextTrack = world.GetTrackAtPos(nextTrackPos);
             if (nextTrack != null)
             {
-                var d = nextTrack.GetAnchorDataForEntrySide(rider, nextTrackPos, (bp - nextTrackPos).AsVec3i);
+                var d = nextTrack.GetAnchorDataForEntrySide(world, nextTrackPos, (bp - nextTrackPos).AsVec3i);
                 if (d == null) {
                     return (null, nextTrackPos, -1, null); //-1 is an invalid value, I know
                 }
@@ -105,7 +103,7 @@ public static class RailUtil {
             }
         }
 
-        var nextAnchors = nextTrack?.GetAnchorDataForEntrySide(rider, nextTrackPos, (bp - nextTrackPos).AsVec3i);
+        var nextAnchors = nextTrack?.GetAnchorDataForEntrySide(world, nextTrackPos, (bp - nextTrackPos).AsVec3i);
 
         return (nextTrack, nextTrackPos, nextAnchors?.ClosestAnchor(anchor.offset.AddCopy(bp - nextTrackPos)) ?? 1, nextAnchors);
     }
