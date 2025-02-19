@@ -6,7 +6,37 @@
     {
       "name": "vintagerails.CartTrack",
       "properties": {
-        "speedMultiplier": 1,
+        "trackBehaviors": [
+            {
+              code: "ConstantFriction",
+              friction: 3
+            },
+            {
+              code: "DynamicFriction",
+              frictionCoefficient: 4,
+              minSpeedByType: {
+                "*-copper-*": 1,
+                "*-*bronze-*": 2,
+                "*-iron-*": 3,
+                "*-meteoriciron-*": 6,
+                "*-steel-*": 8
+              },    
+            },
+            {
+              code: "ConstantAcceleration",
+              enabledByType: {
+                "*-raised*": true,
+                "*": false
+              },
+              "accelerationByType": {
+                "*-raised_ns": -8, //5 + ConstantFriction
+                "*-raised_sn": 8,
+                "*-raised_we": -8,
+                "*-raised_ew": 8,
+                "*": 0
+              },
+            }
+        ],
         "accelerationByType": {
           "*-raised_ns": -5,
           "*-raised_sn": 5,
