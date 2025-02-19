@@ -194,12 +194,6 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
 
         WasOnTrack = true;
         
-        // if (bp != previousBp) {
-        //     PreviousBp = previousBp.Set(bp);
-        // }
-        
-        //speed += track.ConstantAcceleration * dt - speed * track.Friction * dt;
-
         ApplyCollisionsAndPushing(ref speed);
         Speed = speed;
         
