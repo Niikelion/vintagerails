@@ -65,6 +65,9 @@ public class TrackAnchorData {
         var tree = new TreeAttribute();
         tree.SetVec3i("lower", LowerAnchor.blockOffset);
         tree.SetVec3i("higher", HigherAnchor.blockOffset);
+        
+        tree.SetVec3d("lowerA", LowerAnchor.offset);
+        tree.SetVec3d("higherA", HigherAnchor.offset);
         return tree;
     }
     
@@ -75,10 +78,13 @@ public class TrackAnchorData {
         
         var lower = attributes.GetVec3i("lower");
         var higher = attributes.GetVec3i("higher");
+        
+        var lowerA = attributes.GetVec3d("lowerA");
+        var higherA = attributes.GetVec3d("higherA");
 
         return Create(
-            (lower.AsVec3d() / 2, lower),
-            (higher.AsVec3d() / 2, higher)
+            (lowerA, lower),
+            (higherA, higher)
         );
     }
     

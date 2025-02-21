@@ -155,6 +155,9 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
     public override void OnEntityLoaded() {
         //Restores anchors (needed after save loading); May not work after derailment
         LastAnchorData = TrackAnchorData.Decode(PersistentData.GetTreeAttribute(AnchorsAttribute));
+        if (WasOnTrack &&  _physics != null) {
+           _physics.Ticking = false;
+        }
     }
 
     void IOrderedPhysicsTickBehavior.OnTick(double dt) {
@@ -190,6 +193,7 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
             }
             Rerail(anchors, previousBp, ref speed, ref posOnTrack);
             LastAnchorData = anchors;
+            SaveLastAnchorData();
         }
 
         WasOnTrack = true;
@@ -199,7 +203,6 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
         
         ApplyMovement(track, ref posOnTrack, speed, out var facingCorrection, dt);
         Facing *= facingCorrection;
-
         {
             var anchors = LastAnchorData;
             
@@ -228,6 +231,7 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
         }
         
         PosOnTrack = _nextPosOnTrack;
+        // entity.TeleportTo(_nextPos);
         entity.ServerPos.SetAngles(_nextPos).SetPos(_nextPos);
         entity.Pos.SetFrom(entity.ServerPos);
     }
@@ -292,7 +296,7 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
         return true;
     }
     
-    private void Derail()
+    private void Derail() 
     {
         if (_physics != null && LastAnchorData is not null)
             entity.SidedPos.Motion.Set(LastAnchorData[1].offset - LastAnchorData[0].offset).Normalize().Mul(Speed * U.PhysicsTickInterval);
@@ -402,7 +406,6 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
             currentPos = newPos;
         }
     }
-    
     
     private void ApplyNextPos(BlockPos bp, TrackAnchorData anchors, double posFactor) {
         var la = anchors.LowerAnchor.offset;

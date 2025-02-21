@@ -49,5 +49,18 @@ public static class U {
         attributes.RemoveAttribute(key+"Y");
         attributes.RemoveAttribute(key+"Z");
     }
+
+    public static void SetVec3d(this ITreeAttribute attribute, string key, Vec3d vec) {
+        attribute.SetDouble(key+"X", vec.X);
+        attribute.SetDouble(key+"Y", vec.Y);
+        attribute.SetDouble(key+"Z", vec.Z);
+    }
     
+    public static Vec3d GetVec3d(this ITreeAttribute attribute, string key) {
+        return new Vec3d(
+            attribute.GetDouble(key+"X"),
+            attribute.GetDouble(key+"Y"),
+            attribute.GetDouble(key+"Z")
+            );
+    }
 }

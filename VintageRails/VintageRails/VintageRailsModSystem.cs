@@ -23,6 +23,7 @@ namespace VintageRails
 
         public override void StartPre(ICoreAPI api) {
             base.StartPre(api);
+            MinecartsBatch.Clear();
             TrackBehaviors.Clear();
         }
 
@@ -96,6 +97,5 @@ namespace VintageRails
         public void Clear() {
             _factories.Clear();
         }
-        
     }
 }

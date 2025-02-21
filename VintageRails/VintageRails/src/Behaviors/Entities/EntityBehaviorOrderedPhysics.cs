@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using VintageRails.Behaviors.Callbacks;
 using VintageRails.Utils;
+using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 
 namespace VintageRails.Behaviors.Entities;
@@ -19,7 +20,12 @@ public class EntityBehaviorOrderedPhysics : EntityBehavior {
     }
 
     public override void AfterInitialized(bool onFirstSpawn) {
-        base.AfterInitialized(onFirstSpawn); 
+        base.AfterInitialized(onFirstSpawn);
+
+        if (entity.World.Side != EnumAppSide.Server) {
+            return;
+        }
+        
         var tickers = entity.GetInterfaces<IOrderedPhysicsTickBehavior>();
         var sorter = new TopoSorter<Type>();
         foreach (var ticker in tickers) {
@@ -41,7 +47,9 @@ public class EntityBehaviorOrderedPhysics : EntityBehavior {
     }
 
     public override void OnEntityDespawn(EntityDespawnData despawn) {
-        VintageRailsModSystem.MinecartsBatch.Remove(this);
+        if (entity.World.Side == EnumAppSide.Server) {
+            VintageRailsModSystem.MinecartsBatch.Remove(this);   
+        }
     }
 
     public void OnPhysicsTick(float dt) {
