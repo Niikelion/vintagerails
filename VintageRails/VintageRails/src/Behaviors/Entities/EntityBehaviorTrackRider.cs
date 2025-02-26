@@ -105,7 +105,7 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
     
     [NotNull] private ITreeAttribute? PersistentData { get; set; }
 
-    public EntityBehaviorTrackRider(Vintagestory.API.Common.Entities.Entity entity) : base(entity) {}
+    public EntityBehaviorTrackRider(Entity entity) : base(entity) {}
     
     public override void Initialize(EntityProperties properties, JsonObject attributes) {
         base.Initialize(properties, attributes);
@@ -227,7 +227,7 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
         speed = s;
     }
 
-    private bool HandleEntityCollision(Vintagestory.API.Common.Entities.Entity e, ref double speed)
+    private bool HandleEntityCollision(Entity e, ref double speed)
     {
         if (LastAnchorData == null)
         {

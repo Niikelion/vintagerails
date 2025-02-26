@@ -28,6 +28,18 @@
       "selectionBoxes": [
         "SeatAP"
       ]
+    },
+    "vintagerails.CouplingPoints": {
+      "points": [
+        {
+          localPos: { z: 0.65 },
+          boxSize: { x: 0.25, y: 0.25, z: 0.25 },
+        },
+        {
+          localPos: { z: -0.65 },
+          boxSize: { x: 0.25, y: 0.25, z: 0.25 },
+        }
+      ]
     }
   },
   "client": {
@@ -43,7 +55,8 @@
       { "code": "selectionboxes" },
       { "code": "creaturecarrier" },
       { "code": "rideableaccessories" },
-      { "code": "vintagerails.InfoAttachments" }
+      { "code": "vintagerails.InfoAttachments" },
+      { "code": "vintagerails.CouplingPoints" }
     ]
   },
   "server": {
@@ -56,7 +69,8 @@
       { "code": "selectionboxes" },
       { "code": "creaturecarrier" },
       { "code": "rideableaccessories" },
-      { "code": "vintagerails.OrderedPhysics" }
+      { "code": "vintagerails.OrderedPhysics" },
+      { "code": "vintagerails.CouplingPoints" }
     ]
   }
 }
