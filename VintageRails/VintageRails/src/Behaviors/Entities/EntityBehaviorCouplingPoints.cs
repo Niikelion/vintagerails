@@ -16,9 +16,9 @@ public class EntityBehaviorCouplingPoints : EntityBehavior, IRenderer {
 
     public const double SearchRadius = 2;
     
-    public static readonly int OpenColor = ColorUtil.ColorFromRgba(0, 0, 255, 255);
-    public static readonly int ClosedColor = ColorUtil.ColorFromRgba(255, 0, 0, 255);
-    public static readonly int LinkedColor = ColorUtil.ColorFromRgba(0, 255, 0, 255);
+    public static readonly int OpenColor = ColorUtil.ColorFromRgba(0, 255, 255, 255); // Yellow
+    public static readonly int ClosedColor = ColorUtil.ColorFromRgba(0, 0, 255, 255); // Red
+    public static readonly int LinkedColor = ColorUtil.ColorFromRgba(0, 255, 0, 255); // Green
 
     private static readonly SimpleParticleProperties MarkerParticles = new() {
         MinVelocity = Vec3f.Zero,
