@@ -14,6 +14,8 @@ namespace VintageRails.Behaviors.Entities;
 
 public class EntityBehaviorCouplingPoints : EntityBehavior, IRenderer {
 
+    public const double SearchRadius = 2;
+    
     public static readonly int OpenColor = ColorUtil.ColorFromRgba(0, 0, 255, 255);
     public static readonly int ClosedColor = ColorUtil.ColorFromRgba(255, 0, 0, 255);
     public static readonly int LinkedColor = ColorUtil.ColorFromRgba(0, 255, 0, 255);
@@ -31,6 +33,8 @@ public class EntityBehaviorCouplingPoints : EntityBehavior, IRenderer {
         ParticleModel = EnumParticleModel.Cube
     };
 
+    [NotNull] private EntityPartitioning? EntityPartitioning { get; set; }
+
     [NotNull] private CouplingPoint[]? CouplingPoints { get; set; }
 
     public EntityBehaviorCouplingPoints(Entity entity) : base(entity) {
@@ -44,7 +48,10 @@ public class EntityBehaviorCouplingPoints : EntityBehavior, IRenderer {
         var i = 0;
         CouplingPoints = defs.Select(def => new CouplingPoint(def, i++, this)).ToArray();
 
-        if (entity.Api is ICoreClientAPI capi) {
+        var api = entity.Api;
+        EntityPartitioning = entity.Api.ModLoader.GetModSystem<EntityPartitioning>();
+        
+        if (api is ICoreClientAPI capi) {
             InitRenderer(capi);
         }
     }
@@ -66,8 +73,8 @@ public class EntityBehaviorCouplingPoints : EntityBehavior, IRenderer {
         cp?.ToggleState();
     }
 
-    public override WorldInteraction[]? GetInteractionHelp(IClientWorldAccessor world, EntitySelection es,
-        IClientPlayer player, ref EnumHandling handled) {
+    //Needed so Attachments won't crash
+    public override WorldInteraction[]? GetInteractionHelp(IClientWorldAccessor world, EntitySelection es, IClientPlayer player, ref EnumHandling handled) {
         if (es.SelectionBoxIndex >= 0 && GetCouplingPointFromSelection(es.SelectionBoxIndex - 1) != null) {
             handled = EnumHandling.PreventSubsequent;
         }
@@ -84,9 +91,13 @@ public class EntityBehaviorCouplingPoints : EntityBehavior, IRenderer {
         if (entity.World.Side != EnumAppSide.Server) {
             return;
         }
-
+        
         var ePos = entity.ServerPos;
         var mat = CouplingPoint.Def.CreateMat(ePos.Yaw, ePos.Roll, ePos.XYZ); // I know roll is passed as pitch
+
+        HandleConnecting(mat);
+        
+        #region Debug Particles
         foreach (var cp in CouplingPoints) {
             var cuboid = cp.def.GetCuboid(mat);
             var pos = new Vec3d(
@@ -104,8 +115,42 @@ public class EntityBehaviorCouplingPoints : EntityBehavior, IRenderer {
             };
             entity.World.SpawnParticles(MarkerParticles);
         }
+        #endregion
     }
 
+    private void HandleConnecting(double[] transform) {
+        var openPoints = CouplingPoints
+            .Where(point => point.State == CouplingPointState.Open)
+            .Select(point => (point.def.GetPoint(transform), point))
+            .ToArray();
+        
+        EntityPartitioning.WalkEntities(entity.ServerPos.XYZ, SearchRadius, ent => {
+            if (ent == entity) {
+                return true;
+            }
+            var ebcp = ent.GetBehavior<EntityBehaviorCouplingPoints>();
+            if (ebcp != null) {
+                var entPos = ent.ServerPos;
+                var mat = CouplingPoint.Def.CreateMat(entPos.Yaw, entPos.Roll, entPos.XYZ);
+                var otherCuboids = ebcp.CouplingPoints
+                    .Where(point => point.State == CouplingPointState.Open)
+                    .Select(point => (point.def.GetCuboid(mat), point.index))
+                    .ToArray();
+
+                foreach (var cuboid in otherCuboids) {
+                    foreach (var point in openPoints) {
+                        var pointPos = point.Item1;
+                        if (cuboid.Item1.Contains(pointPos.X, pointPos.Y, pointPos.Z)) {
+                            point.point.ConnectTo(ebcp, cuboid.index);
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }, EnumEntitySearchType.Inanimate);
+    }
+    
     public override void OnEntityDespawn(EntityDespawnData despawn) {
         base.OnEntityDespawn(despawn);
 
@@ -274,12 +319,17 @@ public class EntityBehaviorCouplingPoints : EntityBehavior, IRenderer {
             public string ap;
             
             [Pure]
-            public Cuboidd GetCuboid(double[] transform) {
+            public Vec3d GetPoint(double[] transform) {
                 var actualPos = new Vec4d();
                 
                 Mat4d.MulWithVec4(transform, new Vec4d(localPos.X, localPos.Y, localPos.Z, 1), actualPos);
-                
-                return GetCuboid(actualPos.XYZ);
+
+                return actualPos.XYZ;
+            }
+            
+            [Pure]
+            public Cuboidd GetCuboid(double[] transform) {
+                return GetCuboid(GetPoint(transform));
             }
             
             [Pure]
@@ -293,7 +343,7 @@ public class EntityBehaviorCouplingPoints : EntityBehavior, IRenderer {
                     pos.Y + bs2.Y,
                     pos.Z + bs2.Z);
             }
-
+            
             public static double[] CreateMat(double yaw, double pitch, Vec3d pos) {
                 var mat = Mat4d.Create();
                 Mat4d.Translate(mat, mat, pos.X, pos.Y, pos.Z );
