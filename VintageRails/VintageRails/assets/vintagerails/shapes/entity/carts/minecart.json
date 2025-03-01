@@ -137,7 +137,7 @@
 			]
 		},
 		{
-			"name": "Cube2",
+			"name": "FrontCoupling",
 			"from": [ -3.0, 4.0, 5.0 ],
 			"to": [ 0.0, 8.0, 11.0 ],
 			"rotationOrigin": [ -3.0, 4.0, 5.0 ],
@@ -148,7 +148,35 @@
 				"west": { "texture": "#iron1", "uv": [ 0.0, 0.0, 6.0, 4.0 ] },
 				"up": { "texture": "#iron1", "uv": [ 0.0, 0.0, 3.0, 6.0 ] },
 				"down": { "texture": "#iron1", "uv": [ 0.0, 0.0, 3.0, 6.0 ] }
-			}
+			},
+			"attachmentpoints": [
+				{
+					"code": "Coupling-F",
+					"posX": "0.0","posY": "0.0","posZ": "0.0",
+					"rotationX": "0.0","rotationY": "0.0","rotationZ": "0.0"
+				}
+			]
+		},
+		{
+			"name": "BackCoupling",
+			"from": [ 16.0, 4.0, 3.0 ],
+			"to": [ 18.0, 8.0, 13.0 ],
+			"rotationOrigin": [ 16.0, 4.0, 3.0 ],
+			"faces": {
+				"north": { "texture": "#iron1", "uv": [ 0.0, 0.0, 2.0, 4.0 ] },
+				"east": { "texture": "#iron1", "uv": [ 0.0, 0.0, 10.0, 4.0 ] },
+				"south": { "texture": "#iron1", "uv": [ 0.0, 0.0, 2.0, 4.0 ] },
+				"west": { "texture": "#iron1", "uv": [ 0.0, 0.0, 10.0, 4.0 ] },
+				"up": { "texture": "#iron1", "uv": [ 0.0, 0.0, 2.0, 10.0 ] },
+				"down": { "texture": "#iron1", "uv": [ 0.0, 0.0, 2.0, 10.0 ] }
+			},
+			"attachmentpoints": [
+				{
+					"code": "Coubling-B",
+					"posX": "0.0","posY": "0.0","posZ": "0.0",
+					"rotationX": "0.0","rotationY": "0.0","rotationZ": "0.0"
+				}
+			]
 		}
 	],
 	"animations": [

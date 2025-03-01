@@ -8,6 +8,7 @@ using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.Client.NoObf;
+using Vintagestory.GameContent;
 
 namespace VintageRails.Behaviors.Entities;
 
@@ -15,8 +16,8 @@ public class EntityBehaviorCouplingPoints : EntityBehavior, IRenderer {
 
     public static readonly int OpenColor = ColorUtil.ColorFromRgba(0, 0, 255, 255);
     public static readonly int ClosedColor = ColorUtil.ColorFromRgba(255, 0, 0, 255);
-    public  static readonly int LinkedColor = ColorUtil.ColorFromRgba(0, 255, 0, 255);
-    
+    public static readonly int LinkedColor = ColorUtil.ColorFromRgba(0, 255, 0, 255);
+
     private static readonly SimpleParticleProperties MarkerParticles = new() {
         MinVelocity = Vec3f.Zero,
         AddVelocity = Vec3f.Zero,
@@ -29,8 +30,8 @@ public class EntityBehaviorCouplingPoints : EntityBehavior, IRenderer {
         MaxSize = 1f,
         ParticleModel = EnumParticleModel.Cube
     };
-    
-    [NotNull] private CouplingPoint[]? CouplingPoints { get; set; } 
+
+    [NotNull] private CouplingPoint[]? CouplingPoints { get; set; }
 
     public EntityBehaviorCouplingPoints(Entity entity) : base(entity) {
     }
@@ -44,20 +45,46 @@ public class EntityBehaviorCouplingPoints : EntityBehavior, IRenderer {
         CouplingPoints = defs.Select(def => new CouplingPoint(def, i++, this)).ToArray();
 
         if (entity.Api is ICoreClientAPI capi) {
-            InitRenderer(capi);   
+            InitRenderer(capi);
         }
+    }
+
+    public override void AfterInitialized(bool onFirstSpawn) {
+        base.AfterInitialized(onFirstSpawn);
+    }
+
+    public override void OnInteract(EntityAgent byEntity, ItemSlot itemslot, Vec3d hitPosition, EnumInteractMode mode, ref EnumHandling handled) {
+        base.OnInteract(byEntity, itemslot, hitPosition, mode, ref handled);
+
+        var player = (EntityPlayer)byEntity;
+        var sel = player.EntitySelection;
+        if (sel == null || sel.Entity != entity || player.World.Side != EnumAppSide.Server) {
+            return;
+        }
+
+        var cp = GetCouplingPointFromSelection(sel.SelectionBoxIndex - 1);
+        cp?.ToggleState();
+    }
+
+    public override WorldInteraction[]? GetInteractionHelp(IClientWorldAccessor world, EntitySelection es,
+        IClientPlayer player, ref EnumHandling handled) {
+        if (es.SelectionBoxIndex >= 0 && GetCouplingPointFromSelection(es.SelectionBoxIndex - 1) != null) {
+            handled = EnumHandling.PreventSubsequent;
+        }
+
+        return null;
     }
 
     public override string PropertyName() {
         return "vrails.coupling_points";
     }
-    
+
     public override void OnGameTick(float deltaTime) {
         base.OnGameTick(deltaTime);
         if (entity.World.Side != EnumAppSide.Server) {
             return;
         }
-        
+
         var ePos = entity.ServerPos;
         var mat = CouplingPoint.Def.CreateMat(ePos.Yaw, ePos.Roll, ePos.XYZ); // I know roll is passed as pitch
         foreach (var cp in CouplingPoints) {
@@ -66,20 +93,35 @@ public class EntityBehaviorCouplingPoints : EntityBehavior, IRenderer {
                 (cuboid.MinX + cuboid.MaxX) / 2,
                 (cuboid.MinY + cuboid.MaxY) / 2,
                 (cuboid.MinZ + cuboid.MaxZ) / 2
-                );
-            
+            );
+
             MarkerParticles.MinPos = pos;
-            MarkerParticles.Color = OpenColor;
+            MarkerParticles.Color = cp.State switch {
+                CouplingPointState.Open => OpenColor,
+                CouplingPointState.ClosedConnected => LinkedColor,
+                CouplingPointState.ClosedDisconnected => ClosedColor,
+                _ => throw new Exception("Never")
+            };
             entity.World.SpawnParticles(MarkerParticles);
         }
     }
 
     public override void OnEntityDespawn(EntityDespawnData despawn) {
         base.OnEntityDespawn(despawn);
-        
+
         DeinitRenderer();
     }
 
+    private CouplingPoint? GetCouplingPointFromSelection(int selectionBoxId) {
+        var selBoxes = entity.GetBehavior<EntityBehaviorSelectionBoxes>().selectionBoxes;
+        if (selBoxes.Length < selectionBoxId || selectionBoxId < 0) {
+            return null;
+        }
+        var selBox = selBoxes[selectionBoxId];
+        return CouplingPoints.FirstOrDefault(cp => selBox.AttachPoint.Code == cp.def.ap);
+    }
+    
+    
     #region Debug Renderer
 
     [NotNull] private WireframeCube? Cube { get; set; }
@@ -203,10 +245,33 @@ public class EntityBehaviorCouplingPoints : EntityBehavior, IRenderer {
             State = setOpen ? CouplingPointState.Open : CouplingPointState.ClosedDisconnected;
             otherPoint.State = setOtherOpen ? CouplingPointState.Open : CouplingPointState.ClosedDisconnected;
         }
+
+        public void ToggleState() {
+            if (State == CouplingPointState.ClosedConnected) {
+                Disconnect(true, false);
+            }
+
+            if ((State & CouplingPointState.OpenBit) == 0) {
+                State = CouplingPointState.Open;
+            }
+            else {
+                State = CouplingPointState.ClosedDisconnected;
+            }
+        }
+        
+        public void Validate() {
+            var ct = ConnectedTo;
+            if (ct != null) {
+                if (!ct.Value.behavior.entity.Alive) {
+                    Disconnect(true, false);
+                }
+            }
+        }
         
         public struct Def {
             public Vec3d localPos;
             public Vec3d boxSize;
+            public string ap;
             
             [Pure]
             public Cuboidd GetCuboid(double[] transform) {
@@ -241,9 +306,12 @@ public class EntityBehaviorCouplingPoints : EntityBehavior, IRenderer {
     }
 }
 
-
+[Flags]
 public enum CouplingPointState {
-    Open,
-    ClosedDisconnected,
-    ClosedConnected
+    ClosedDisconnected = 0, // IsOpen => 0 | IsConnected => 0
+    Open = 1, // IsOpen => 1 | IsConnected => 0
+    ClosedConnected = 2, // IsOpen => 0 | IsConnected => 2,
+    
+    OpenBit = 1,
+    ConnectedBit = 2
 }

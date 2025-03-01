@@ -26,18 +26,22 @@
     },
     "selectionboxes" : {
       "selectionBoxes": [
-        "SeatAP"
+        "SeatAP",
+        "Coupling-F",
+        "Coubling-B"
       ]
     },
     "vintagerails.CouplingPoints": {
       "points": [
         {
-          localPos: { z: 0.65 },
+          localPos: { z: 0.65, y: 0.1 },
           boxSize: { x: 0.25, y: 0.25, z: 0.25 },
+          ap: "Coupling-F"
         },
         {
-          localPos: { z: -0.65 },
+          localPos: { z: -0.65, y: 0.1 },
           boxSize: { x: 0.25, y: 0.25, z: 0.25 },
+          ap: "Coubling-B"
         }
       ]
     }
@@ -48,6 +52,7 @@
       "base": "vintagerails:entity/carts/minecart"
     },
     "behaviors": [
+      { "code": "vintagerails.CouplingPoints" },
       { "code": "vintagerails.TrackRider" },
       { "code": "repulseagents", "movable": true },
       { "code": "interpolateposition" },
@@ -55,12 +60,12 @@
       { "code": "selectionboxes" },
       { "code": "creaturecarrier" },
       { "code": "rideableaccessories" },
-      { "code": "vintagerails.InfoAttachments" },
-      { "code": "vintagerails.CouplingPoints" }
+      { "code": "vintagerails.InfoAttachments" }
     ]
   },
   "server": {
     "behaviors": [
+      { "code": "vintagerails.CouplingPoints" },
       { "code": "vintagerails.TrackRider" },
       { "code": "vintagerails.TrackCollision" },
       { "code": "vintagerails.TickAttachments" },
@@ -69,8 +74,7 @@
       { "code": "selectionboxes" },
       { "code": "creaturecarrier" },
       { "code": "rideableaccessories" },
-      { "code": "vintagerails.OrderedPhysics" },
-      { "code": "vintagerails.CouplingPoints" }
+      { "code": "vintagerails.OrderedPhysics" }
     ]
   }
 }
