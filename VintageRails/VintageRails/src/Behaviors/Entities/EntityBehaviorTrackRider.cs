@@ -231,7 +231,6 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
         }
         
         PosOnTrack = _nextPosOnTrack;
-        // entity.TeleportTo(_nextPos);
         entity.ServerPos.SetAngles(_nextPos).SetPos(_nextPos);
         entity.Pos.SetFrom(entity.ServerPos);
     }
@@ -296,7 +295,7 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
         return true;
     }
     
-    private void Derail() 
+    private void Derail()
     {
         if (_physics != null && LastAnchorData is not null)
             entity.SidedPos.Motion.Set(LastAnchorData[1].offset - LastAnchorData[0].offset).Normalize().Mul(Speed * U.PhysicsTickInterval);
@@ -368,9 +367,7 @@ public class EntityBehaviorTrackRider : EntityBehavior, IOrderedPhysicsTickBehav
 
                 var distanceRatio = Math.Min(posAbs, anchors.DeltaL) / movementAbs;
                 track!.OnCartTick(this, bp, dt * distanceRatio);
-
-                //For derailment
-                // LastAnchorData = anchors;
+                
                 deltaL = anchors.DeltaL;
                 posAbs -= deltaL;
             }

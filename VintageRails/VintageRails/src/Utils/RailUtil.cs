@@ -8,21 +8,6 @@ using Vintagestory.API.MathTools;
 namespace VintageRails.Utils;
 
 public static class RailUtil {
-
-    // public static BlockPos GetTrackPos(this IWorldAccessor world, Vec3d pos) {
-    //     var bp = pos.AsBlockPos;
-    //     var track = world.GetBlockBehaviour<BlockBehaviorCartTrack>(bp);
-    //
-    //     if (track == null) {
-    //         var offset = new BlockPos(0, 1, 0);
-    //         if ((pos.Y % 1.0) < 0.5) {
-    //             offset *= -1;
-    //         }
-    //         bp.Add(offset);
-    //     }
-    //     
-    //     return bp;
-    // }
     
     public static (BlockBehaviorCartTrack? track, BlockPos foundAt) GetTrackData(
         this IWorldAccessor world,
@@ -96,7 +81,7 @@ public static class RailUtil {
                 var lp = nextTrackPos.AddCopy(d.LowerAnchor.blockOffset).AsVec3i;
                 var hp = nextTrackPos.AddCopy(d.HigherAnchor.blockOffset).AsVec3i;
 
-                //This needs to go
+                //TODO Replace "Raised" with blockOffset.Y > 0
                 if (!nextTrack.Raised) nextTrack = null;
                 
                 if (lp != bp.AsVec3i && hp != bp.AsVec3i) nextTrack = null;

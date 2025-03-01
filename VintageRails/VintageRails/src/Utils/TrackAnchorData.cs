@@ -25,14 +25,6 @@ public class TrackAnchorData {
         ForwardAnchors.Add(anchors.LowerAnchor.blockOffset, anchors);
         ForwardAnchors.Add(anchors.HigherAnchor.blockOffset, anchors);
         
-        // anchors = OfDirections(BlockFacing.EAST, BlockFacing.WEST, true);
-        // ForwardAnchors.Add(anchors.LowerAnchor.blockOffset, anchors);
-        // ForwardAnchors.Add(anchors.HigherAnchor.blockOffset, anchors);
-        //
-        // anchors = OfDirections(BlockFacing.NORTH, BlockFacing.SOUTH, true);
-        // ForwardAnchors.Add(anchors.LowerAnchor.blockOffset, anchors);
-        // ForwardAnchors.Add(anchors.HigherAnchor.blockOffset, anchors);
-        
         //TODO add diagonal when implemented
     }
     
