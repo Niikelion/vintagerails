@@ -23,6 +23,7 @@ namespace VintageRails
 
         public override void StartPre(ICoreAPI api) {
             base.StartPre(api);
+            MinecartsBatch.Clear();
             TrackBehaviors.Clear();
         }
 
@@ -33,6 +34,7 @@ namespace VintageRails
             api.RegisterBlockClass(Mod.Info.ModID + ".Rails", typeof(BlockTrack));
 
             api.RegisterBlockBehaviorClass(Mod.Info.ModID + ".CartTrack", typeof(BlockBehaviorCartTrack));
+            api.RegisterBlockBehaviorClass(Mod.Info.ModID + ".CartTrackCurved", typeof(BlockBehaviorCurvedCartTrack));
             api.RegisterBlockBehaviorClass(Mod.Info.ModID + ".OverridePick", typeof(BlockBehaviorOverridePick));
             api.RegisterBlockBehaviorClass(Mod.Info.ModID + ".TrackVariantProvider", typeof(BlockBehaviorTrackVariantProvider));
             
@@ -95,6 +97,5 @@ namespace VintageRails
         public void Clear() {
             _factories.Clear();
         }
-        
     }
 }

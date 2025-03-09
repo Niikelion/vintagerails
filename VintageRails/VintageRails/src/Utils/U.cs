@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Vintagestory.API.Common;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
@@ -42,5 +43,24 @@ public static class U {
     public static T[] GetCollectibleInterfaces<T>(this CollectibleObject collectible) where T : class {
         return collectible.CollectibleBehaviors.Where(behavior => behavior is T).Cast<T>().ToArray();
     }
+
+    public static void RemoveBlockPos(this ITreeAttribute attributes, string key) {
+        attributes.RemoveAttribute(key+"X");
+        attributes.RemoveAttribute(key+"Y");
+        attributes.RemoveAttribute(key+"Z");
+    }
+
+    public static void SetVec3d(this ITreeAttribute attribute, string key, Vec3d vec) {
+        attribute.SetDouble(key+"X", vec.X);
+        attribute.SetDouble(key+"Y", vec.Y);
+        attribute.SetDouble(key+"Z", vec.Z);
+    }
     
+    public static Vec3d GetVec3d(this ITreeAttribute attribute, string key) {
+        return new Vec3d(
+            attribute.GetDouble(key+"X"),
+            attribute.GetDouble(key+"Y"),
+            attribute.GetDouble(key+"Z")
+            );
+    }
 }

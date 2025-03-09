@@ -44,6 +44,10 @@ public class PhysicsBatch : IPhysicsTickable {
     }
     
     public void OnPhysicsTickDone() => _flag = 0;
+
+    public void Clear() {
+        _tickers.Clear();
+    }
     
     private void HandleAdditionAndRemovals() {
         while (_events.TryDequeue(out var evnt)) {

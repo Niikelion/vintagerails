@@ -4,7 +4,10 @@
   "behaviors": [
     { "name": "Unstable" },
     {
-      "name": "vintagerails.CartTrack",
+      "nameByType": {
+          "*curved*": "vintagerails.CartTrackCurved",
+          "*": "vintagerails.CartTrack"
+      },
       "properties": {
         "trackBehaviors": [
             {
