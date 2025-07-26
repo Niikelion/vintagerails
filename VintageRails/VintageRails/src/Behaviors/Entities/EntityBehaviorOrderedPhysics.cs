@@ -33,7 +33,7 @@ public class EntityBehaviorOrderedPhysics : EntityBehavior {
         }
         foreach (var ticker in tickers) {
             var tickerType = ticker.GetType();
-            foreach (var type in ticker.After) { 
+            foreach (var type in ticker.After) {
                 sorter.AddSoftDependency(tickerType, type);
             }
             foreach (var type in ticker.Before) {
@@ -43,12 +43,12 @@ public class EntityBehaviorOrderedPhysics : EntityBehavior {
 
         _tickers = sorter.Sort().Select(type => tickers.First(ticker => ticker.GetType() == type)).ToList();
         
-        VintageRailsModSystem.MinecartsBatch.Add(this);
+        entity.Api.ModLoader.GetModSystem<SyncPhysicsSystem>().Behaviors.Add(this);
     }
 
     public override void OnEntityDespawn(EntityDespawnData despawn) {
         if (entity.World.Side == EnumAppSide.Server) {
-            VintageRailsModSystem.MinecartsBatch.Remove(this);   
+            entity.Api.ModLoader.GetModSystem<SyncPhysicsSystem>().Behaviors.Remove(this);
         }
     }
 

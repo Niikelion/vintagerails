@@ -6,7 +6,7 @@ namespace VintageRails.Entities;
 
 public class EntitySeatInstSupplier : Entity, ISeatInstSupplier {
     
-    public IMountableSeat CreateSeat(IMountable mountable, string seatId, SeatConfig config = null) {
+    public IMountableSeat CreateSeat(IMountable mountable, string seatId, SeatConfig? config = null) {
         return new GenericSeat(mountable, seatId, config);
     }
 
@@ -14,7 +14,7 @@ public class EntitySeatInstSupplier : Entity, ISeatInstSupplier {
 
         public override AnimationMetaData? SuggestedAnimation => null;
 
-        public GenericSeat(IMountable mountablesupplier, string seatId, SeatConfig config) : base(mountablesupplier, seatId, config) {
+        public GenericSeat(IMountable mountablesupplier, string seatId, SeatConfig? config) : base(mountablesupplier, seatId, config) {
             
         }
         

@@ -7,17 +7,15 @@ using Vintagestory.API.Util;
 
 namespace VintageRails.Global;
 
-public class PhysicsBatch : IPhysicsTickable {
+public class PhysicsBatch {
 
-    private volatile int _flag;
-
-    private readonly ConcurrentQueue<(EntityBehaviorOrderedPhysics ticker, bool addition)> _events = new();
-    // private readonly ConcurrentBag<EntityBehaviorOrderedPhysics> _toRemove = new();
+    // private readonly ConcurrentQueue<(EntityBehaviorOrderedPhysics ticker, bool addition)> _events = new();
+    // // private readonly ConcurrentBag<EntityBehaviorOrderedPhysics> _toRemove = new();
     
     private readonly HashSet<EntityBehaviorOrderedPhysics> _tickers = new();
     
     public void OnPhysicsTick(float dt) {
-        HandleAdditionAndRemovals();
+        // HandleAdditionAndRemovals();
         
         foreach (var ticker in _tickers) {
             ticker.OnPhysicsTick(dt);
@@ -26,39 +24,29 @@ public class PhysicsBatch : IPhysicsTickable {
             ticker.AfterPhysicsTick(dt);
         }
     }
-
-    public void AfterPhysicsTick(float dt) {
-        //Nothing
-    }
-
-    public bool CanProceedOnThisThread() {
-        return AsyncHelper.CanProceedOnThisThread(ref _flag);
-    }
-
+    
     public void Add(EntityBehaviorOrderedPhysics ticker) {
-        _events.Enqueue((ticker, true));
+        // _events.Enqueue((ticker, true));
+        _tickers.Add(ticker);
     }
 
     public void Remove(EntityBehaviorOrderedPhysics ticker) {
-        _events.Enqueue((ticker, false));
+        // _events.Enqueue((ticker, false));
+        _tickers.Remove(ticker);
     }
-    
-    public void OnPhysicsTickDone() => _flag = 0;
 
     public void Clear() {
         _tickers.Clear();
     }
     
-    private void HandleAdditionAndRemovals() {
-        while (_events.TryDequeue(out var evnt)) {
-            if (evnt.addition) {
-                _tickers.Add(evnt.ticker);
-            }
-            else {
-                _tickers.Remove(evnt.ticker);
-            }
-        }
-    }
-    
-    public bool Ticking { get; set; }
+    // private void HandleAdditionAndRemovals() {
+    //     while (_events.TryDequeue(out var evnt)) {
+    //         if (evnt.addition) {
+    //             _tickers.Add(evnt.ticker);
+    //         }
+    //         else {
+    //             _tickers.Remove(evnt.ticker);
+    //         }
+    //     }
+    // }
 }
