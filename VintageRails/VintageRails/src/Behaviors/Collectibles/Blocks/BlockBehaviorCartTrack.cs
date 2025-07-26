@@ -27,7 +27,11 @@ namespace VintageRails.Behaviors.Collectibles.Blocks
         
         public BlockBehaviorCartTrack(Block block) : base(block) {}
 
-        public override void Initialize(JsonObject properties)
+        // [NotNull] private ICoreAPI? CoreApi { get; set; }
+
+        private JsonObject[]? BehaviorsRaw { get; set; }
+        
+        public override void Initialize(JsonObject properties) 
         {
             base.Initialize(properties);
             
@@ -51,17 +55,23 @@ namespace VintageRails.Behaviors.Collectibles.Blocks
             EndDir = hasEndDir ? BlockFacing.FromFirstLetter(properties["endDir"].AsString()) : EndDir;
 
             AnchorData = TrackAnchorData.OfDirections(StartDir, EndDir, Raised);
-
-            foreach (var behaviorJson in properties["trackBehaviors"].AsArray() ?? Enumerable.Empty<JsonObject>()) {
-                var behavior = VintageRailsModSystem.TrackBehaviors.FromJson(behaviorJson);
-
+            
+            BehaviorsRaw = properties["trackBehaviors"].AsArray();
+        }
+        
+        public override void OnLoaded(ICoreAPI api) {
+            base.OnLoaded(api);
+            var registry = api.ModLoader.GetModSystem<VintageRailsModSystem>().TrackBehaviors;
+            foreach (var behaviorJson in BehaviorsRaw ?? Enumerable.Empty<JsonObject>()) {
+                var behavior = registry.FromJson(behaviorJson);
+                
                 if (behavior == null) {
                     continue;
                 }
                 
                 var minSpeed = behaviorJson["minSpeed"].AsDouble(0);
                 var maxSpeed = behaviorJson["maxSpeed"].AsDouble(double.PositiveInfinity);
-
+                
                 _trackBehaviors.Add(new TrackBehavior {
                     Behavior = behavior,
                     MaxSpeed = maxSpeed,
@@ -69,7 +79,7 @@ namespace VintageRails.Behaviors.Collectibles.Blocks
                 });
             }
         }
-
+        
         public virtual IEnumerable<ITrackBehavior> GetValidTrackBehaviors(EntityBehaviorTrackRider rider) {
             return _trackBehaviors.Where(behavior => Math.Abs(rider.Speed) <= behavior.MaxSpeed &&  Math.Abs(rider.Speed) >= behavior.MinSpeed).Select(behavior => behavior.Behavior);
         }
