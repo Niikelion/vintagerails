@@ -6,11 +6,13 @@ using VintageRails.Utils;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
+using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
 namespace VintageRails.Behaviors.Entities;
 
-public class EntityBehaviorAttachmentInfo : EntityBehavior {
+public class EntityBehaviorAttachmentInfo : EntityBehavior, ICustomInteractionHelpPositioning {
 
     [NotNull] private EntityBehaviorAttachable? Attachable { get; set; }
 
@@ -50,7 +52,7 @@ public class EntityBehaviorAttachmentInfo : EntityBehavior {
 
         return null;
     }
-
+    
     public override void GetInfoText(StringBuilder infotext) {
         foreach (var slot in Attachable.Inventory) {
             var stack = slot.Itemstack;
@@ -65,4 +67,19 @@ public class EntityBehaviorAttachmentInfo : EntityBehavior {
             }
         }
     }
+
+
+    public Vec3d? GetInteractionHelpPosition() {
+        ICoreClientAPI api = (ICoreClientAPI)entity.Api;
+        if (api.World.Player.CurrentEntitySelection == null)
+            return null;
+        int selectionBoxIndex = api.World.Player.CurrentEntitySelection.SelectionBoxIndex - 1;
+        if (selectionBoxIndex >= 0) 
+            return entity.GetBehavior<EntityBehaviorSelectionBoxes>().GetCenterPosOfBox(selectionBoxIndex)?.Add(0.0, 0.5, 0.0);
+        else {
+            return entity.Pos.XYZ.AddCopy(0, 1, 0);
+        }
+    }
+
+    public bool TransparentCenter => false;
 }

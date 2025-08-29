@@ -36,14 +36,14 @@
       "base": "vintagerails:entity/carts/minecart"
     },
     "behaviors": [
+      { "code": "vintagerails.InfoAttachments" },
       { "code": "vintagerails.TrackRider" },
       { "code": "repulseagents", "movable": true },
       { "code": "interpolateposition" },
       { "code": "passivephysics" },
       { "code": "selectionboxes" },
       { "code": "creaturecarrier" },
-      { "code": "rideableaccessories" },
-      { "code": "vintagerails.InfoAttachments" }
+      { "code": "rideableaccessories" }
     ]
   },
   "server": {
